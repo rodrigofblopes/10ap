@@ -1,0 +1,13 @@
+{
+  "name": "lote10x30-10apartamentos",
+  "version": "1.0.0",
+  "description": "Hub Central de Projetos - Lote 10x30 - 10 Apartamentos - GitHub Pages",
+  "homepage": "https://SEU-USUARIO.github.io/SEU-REPOSITORIO",
+  "scripts": {
+    "build": "echo 'Static site - no build needed for GitHub Pages'",
+    "start": "echo 'Static site - no start needed'"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

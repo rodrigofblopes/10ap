@@ -1,0 +1,28 @@
+# Ignorar TUDO exceto o que precisamos
+_source/
+.github/
+README.md
+DEPLOY-GITHUB.md
+github-pages.json
+*.md
+*.log
+
+# Ignorar arquivos de desenvolvimento
+node_modules/
+src/
+dist/
+*.ts
+*.tsx
+*.jsx
+*.scss
+*.sass
+*.less
+*.lock
+*.toml
+*.config.js
+*.config.ts
+vite.config.*
+tailwind.config.*
+postcss.config.*
+eslint.config.*
+tsconfig.*

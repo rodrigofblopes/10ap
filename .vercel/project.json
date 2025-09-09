@@ -1,0 +1,10 @@
+{
+  "orgId": "your-org-id",
+  "projectId": "your-project-id",
+  "settings": {
+    "buildCommand": "echo 'Static site - no build needed'",
+    "outputDirectory": "public",
+    "installCommand": "echo 'Static site - no install needed'",
+    "rootDirectory": "."
+  }
+}

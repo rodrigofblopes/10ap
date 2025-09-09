@@ -1,0 +1,14 @@
+{
+  "name": "lote10x30-10apartamentos",
+  "version": "1.0.0",
+  "description": "Hub Central de Projetos - Lote 10x30 - 10 Apartamentos",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Static site - no build needed'",
+    "start": "echo 'Static site - no start needed'",
+    "vercel-build": "echo 'Static site - no build needed'"
+  },
+  "keywords": ["static", "site", "dashboard", "arquitetura", "estrutural"],
+  "author": "Bonfim Imobiliária e Engenharia",
+  "license": "MIT"
+}
