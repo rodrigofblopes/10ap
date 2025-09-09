@@ -1,27 +1,34 @@
 {
   "1.1": {
-    "descricao": "Vigas",
-    "colecoes": [
-      "1.1_.031",
-      "1.1_.032", 
-      "1.1_.033",
-      "1.1_.034",
-      "1.1_.035",
-      "1.1_.036",
-      "1.1_.037",
-      "1.1_.038",
-      "1.1_.039",
-      "1.1_.040",
-      "1.1_.041",
-      "1.1_.042",
-      "1.1_.043",
-      "1.1_.044",
-      "1.1_.045"
+    "descricao": "Vigas da Fundação",
+    "colecaoPai": "11",
+    "subcolecoes": [
+      "11_",
+      "11_001", 
+      "11_002",
+      "11_003",
+      "11_004",
+      "11_005",
+      "11_006",
+      "11_007",
+      "11_008",
+      "11_009",
+      "11_010",
+      "11_011",
+      "11_012",
+      "11_013",
+      "11_014",
+      "11_015",
+      "11_016",
+      "11_017",
+      "11_018",
+      "11_019"
     ]
   },
   "1.2": {
-    "descricao": "Pilares",
-    "colecoes": [
+    "descricao": "Pilares da Fundação",
+    "colecaoPai": "1.2",
+    "subcolecoes": [
       "1.2_.003",
       "1.2_.011",
       "1.2_.012",
@@ -29,40 +36,45 @@
     ]
   },
   "2.1": {
-    "descricao": "Vigas Térreo",
-    "colecoes": [
+    "descricao": "Vigas do Térreo",
+    "colecaoPai": "2.1",
+    "subcolecoes": [
       "2.1_.001",
       "2.1_.002",
       "2.1_.003"
     ]
   },
   "2.2": {
-    "descricao": "Pilares Térreo",
-    "colecoes": [
+    "descricao": "Pilares do Térreo",
+    "colecaoPai": "2.2",
+    "subcolecoes": [
       "2.2_.001",
       "2.2_.002",
       "2.2_.003"
     ]
   },
   "2.3": {
-    "descricao": "Lajes Térreo",
-    "colecoes": [
+    "descricao": "Lajes do Térreo",
+    "colecaoPai": "2.3",
+    "subcolecoes": [
       "2.3_.001",
       "2.3_.002",
       "2.3_.003"
     ]
   },
   "3.1": {
-    "descricao": "Vigas Superior",
-    "colecoes": [
+    "descricao": "Vigas do Pavimento Superior",
+    "colecaoPai": "3.1",
+    "subcolecoes": [
       "3.1_.001",
       "3.1_.002",
       "3.1_.003"
     ]
   },
   "3.2": {
-    "descricao": "Pilares Superior",
-    "colecoes": [
+    "descricao": "Pilares do Pavimento Superior",
+    "colecaoPai": "3.2",
+    "subcolecoes": [
       "3.2_.001",
       "3.2_.002",
       "3.2_.003"

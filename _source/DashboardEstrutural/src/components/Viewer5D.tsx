@@ -250,7 +250,7 @@ function StructuralModel({ highlightedElements, onElementsExtracted, onElementCl
           for (const highlightedParentCollection of highlightedElements) {
             if (collections[highlightedParentCollection]) {
               // Verificar se este objeto está na coleção pai
-              const isInParentCollection = collections[highlightedParentCollection].some(obj => obj === child);
+              const isInParentCollection = collections[highlightedParentCollection].some((obj: any) => obj === child);
               if (isInParentCollection) {
                 isHighlighted = true;
                 parentCollectionName = highlightedParentCollection;
@@ -595,7 +595,7 @@ function usePlanilha3DLink(itens5D: any[]) {
       console.log('🖱️ ===== ITEM SELECIONADO =====');
       console.log('📋 Item completo:', item);
       
-      setSelectedItems(prev => {
+      setSelectedItems(() => {
         // SEMPRE limpar seleção anterior e selecionar apenas o item atual
         const newSelection = [itemId];
         
