@@ -10,11 +10,13 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false, // Desabilitar sourcemaps para produção
+    emptyOutDir: true, // Limpar diretório de saída antes do build
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          charts: ['chart.js', 'react-chartjs-2']
+          charts: ['chart.js', 'react-chartjs-2'],
+          three: ['three', '@react-three/fiber', '@react-three/drei']
         }
       }
     }

@@ -21,15 +21,30 @@ jobs:
         cache: 'npm'
         cache-dependency-path: _source/DashBoardArquitetura/package-lock.json
         
+    - name: Debug - List files
+      run: |
+        echo "=== Root directory contents ==="
+        ls -la
+        echo "=== _source directory contents ==="
+        ls -la _source/
+        echo "=== DashBoardArquitetura directory contents ==="
+        ls -la _source/DashBoardArquitetura/
+        
     - name: Install dependencies
       run: |
         cd _source/DashBoardArquitetura
+        echo "=== Installing dependencies ==="
         npm ci
+        echo "=== Dependencies installed ==="
         
     - name: Build
       run: |
         cd _source/DashBoardArquitetura
+        echo "=== Building project ==="
         npm run build
+        echo "=== Build completed ==="
+        echo "=== Build output ==="
+        ls -la dist/
         
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3

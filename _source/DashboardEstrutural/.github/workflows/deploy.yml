@@ -21,15 +21,30 @@ jobs:
         cache: 'npm'
         cache-dependency-path: _source/DashboardEstrutural/package-lock.json
         
+    - name: Debug - List files
+      run: |
+        echo "=== Root directory contents ==="
+        ls -la
+        echo "=== _source directory contents ==="
+        ls -la _source/
+        echo "=== DashboardEstrutural directory contents ==="
+        ls -la _source/DashboardEstrutural/
+        
     - name: Install dependencies
       run: |
         cd _source/DashboardEstrutural
+        echo "=== Installing dependencies ==="
         npm ci
+        echo "=== Dependencies installed ==="
         
     - name: Build
       run: |
         cd _source/DashboardEstrutural
+        echo "=== Building project ==="
         npm run build
+        echo "=== Build completed ==="
+        echo "=== Build output ==="
+        ls -la dist/
         
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3

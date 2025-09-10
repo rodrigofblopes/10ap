@@ -1,8 +1,9 @@
 {
-  "buildCommand": "cd _source/DashboardEstrutural && npm run build",
-  "outputDirectory": "_source/DashboardEstrutural/dist",
-  "installCommand": "cd _source/DashboardEstrutural && npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
   "framework": "vite",
+  "rootDirectory": "_source/DashboardEstrutural",
   "rewrites": [
     {
       "source": "/((?!assets/|.*\\.csv|.*\\.glb|.*\\.wasm|.*\\.js|.*\\.css|.*\\.html).*)",

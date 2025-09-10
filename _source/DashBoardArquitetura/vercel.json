@@ -1,8 +1,9 @@
 {
-  "buildCommand": "cd _source/DashBoardArquitetura && npm run build",
-  "outputDirectory": "_source/DashBoardArquitetura/dist",
-  "installCommand": "cd _source/DashBoardArquitetura && npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
   "framework": "vite",
+  "rootDirectory": "_source/DashBoardArquitetura",
   "rewrites": [
     {
       "source": "/((?!assets/|.*\\.csv|.*\\.glb|.*\\.wasm|.*\\.js|.*\\.css|.*\\.html).*)",
