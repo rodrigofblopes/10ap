@@ -2,7 +2,25 @@ import { OrcamentoItem } from '../types/orcamento';
 import * as XLSX from 'xlsx';
 import { dadosOrcamento } from '../data/orcamentoData';
 
-// Dados mockados removidos - sistema usa apenas dados reais da planilha CSV
+// Dados completos incorporados diretamente para evitar problemas de deploy
+const dadosCompletosCSV = `Planilha Orçamentária Sintética Com Valor do Material e da Mão de Obra;;;;;;;;
+Item;Descrição;Und;Quant.;Total;;;Peso (%);Elementos3D
+;;;;M. O.;MAT.;Total;;
+1;PAVIMENTO TÉRREO;;;67.392,92;132.731,35;200.124,27;47,16%;
+ 1.1 ;PAREDES;m²;384,06;33.689,73;37.357,52;71.047,25;16,74%;1.1_.001,1.1_.002,1.1_.003,1.1_.004,1.1_.005,1.1_.006,1.1_.007,1.1_.008,1.1_.009,1.1_.010,1.1_.011,1.1_.012,1.1_.013,1.1_.014,1.1_.015,1.1_.016,1.1_.017,1.1_.018,1.1_.019,1.1_.020,1.1_.021,1.1_.022,1.1_.023,
+ 1.2 ;PISO;m²;134,52;4.241,41;36.036,56;40.277,97;9,49%;1.2_.001,1.2_.002,1.2_.003,1.2_.004,1.2_.005,1.2_.006,1.2_.007,1.2_.008,1.2_.009,1.2_.010,1.2_.011,1.2_.012,1.2_.013,1.2_.014,1.2_.015,1.2_.016,1.2_.017,1.2_.018,1.2_.019
+ 1.3 ;REVESTIMENTO PAREDES;m²;768,12;21.441,68;35.382,07;56.823,75;13,39%;
+ 1.4 ;FORRO;m²;134,52;5.474,95;5.633,70;11.108,65;2,62%;
+ 1.5 ;ESQUADRIAS;unid;30;2.545,15;18.321,50;20.866,65;4,92%;
+2;PAVIMENTO SUPERIOR;;;75.036,27;149.217,16;224.253,43;52,84%;
+ 2.1 ;PAREDES;m²;423,58;37.156,42;41.201,63;78.358,05;18,46%;2.1_.001,2.1_.002,2.1_.003,2.1_.004,2.1_.005,2.1_.006,2.1_.007,2.1_.008,2.1_.009,2.1_.010,2.1_.011,2.1_.012,2.1_.013,2.1_.014,2.1_.015,2.1_.016,2.1_.017,2.1_.018,2.1_.019,2.1_.020,2.1_.021,2.1_.022,2.1_.023
+ 2.2 ;PISO;m²;134,52;4.241,41;36.036,56;40.277,97;9,49%;2.2_,2.2_.001,2.2_.002,2.2_.003,2.2_.004,2.2_.005,2.2_.006,2.2_.007,2.2_.008,2.2_.009,2.2_.010,2.2_.011,2.2_.012,2.2_.013,2.2_.014,2.2_.015,2.2_.016,2.2_.017,2.2_.018,2.2_.019,
+ 2.3 ;REVESTIMENTO PAREDES;m²;847,16;23.265,93;38.283,62;61.549,55;14,50%;
+ 2.4 ;FORRO;m²;134,52;5.474,95;5.633,70;11.108,65;2,62%;
+ 2.5 ;ESQUADRIAS;unid;30;2.545,15;18.321,50;20.866,65;4,92%;
+ 2.6 ;TELHADO;m²;171,21;2.352,41;9.740,15;12.092,56;2,85%;2.6_
+;;;;142.429,19;281.948,51;424.377,70;;
+;;;;424.377,70;;;`;
 
 export const carregarDados = async (): Promise<OrcamentoItem[]> => {
   try {
@@ -53,15 +71,21 @@ export const carregarDados = async (): Promise<OrcamentoItem[]> => {
       }
     }
     
-    if (!csvResponse || !csvResponse.ok) {
-      throw new Error(`Erro ao carregar 5DARQ.csv de qualquer caminho. Status: ${csvResponse?.status}`);
+    let csvContent: string;
+    
+    if (csvResponse && csvResponse.ok) {
+      // Usar arquivo CSV externo se disponível
+      console.log(`✅ CSV carregado com sucesso de: ${csvPath}`);
+      console.log('📊 Status da resposta CSV:', csvResponse.status);
+      console.log('📋 Headers da resposta:', Object.fromEntries(csvResponse.headers.entries()));
+      csvContent = await csvResponse.text();
+      console.log('✅ Usando arquivo CSV externo');
+    } else {
+      // Usar dados incorporados como fallback
+      console.log('⚠️ Arquivo CSV externo não disponível, usando dados incorporados');
+      csvContent = dadosCompletosCSV;
+      console.log('✅ Usando dados CSV incorporados');
     }
-    
-    console.log(`✅ CSV carregado com sucesso de: ${csvPath}`);
-    console.log('📊 Status da resposta CSV:', csvResponse.status);
-    console.log('📋 Headers da resposta:', Object.fromEntries(csvResponse.headers.entries()));
-    
-    const csvContent = await csvResponse.text();
     console.log('📄 CSV carregado, processando dados...');
     console.log('📝 Primeiras 500 caracteres do CSV:', csvContent.substring(0, 500));
     console.log('📏 Tamanho total do CSV:', csvContent.length);
@@ -107,6 +131,14 @@ export const carregarDados = async (): Promise<OrcamentoItem[]> => {
       .filter(item => item.isEtapaTotal)
       .reduce((sum, item) => sum + item.total, 0)
       .toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
+    
+    // Verificar se o item 2.6 está nos dados processados
+    const item26 = dadosProcessados.find(item => item.id === '2.6');
+    if (item26) {
+      console.log('✅ Item 2.6 processado com sucesso:', item26.descricao);
+    } else {
+      console.log('⚠️ Item 2.6 não encontrado nos dados processados');
+    }
     
     return dadosProcessados;
     
