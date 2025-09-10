@@ -12,21 +12,29 @@ export const carregarDados = async (): Promise<OrcamentoItem[]> => {
     console.log('🌐 URL base:', window.location.origin);
     console.log('📂 Caminho atual:', window.location.pathname);
     
-    // Tentar diferentes caminhos para o CSV
+    // Tentar diferentes caminhos para o CSV - ESPECÍFICO PARA ARQUITETURA
     const possiblePaths = ['/5DARQ.csv', './5DARQ.csv', '5DARQ.csv'];
     let csvResponse: Response | null = null;
     let csvPath = '';
     
+    console.log('🏗️ ===== DASHBOARD ARQUITETURA - CARREGANDO PLANILHA =====');
+    console.log('🎯 Buscando especificamente o arquivo 5DARQ.csv (ARQUITETURA)');
+    
     for (const path of possiblePaths) {
       try {
-        console.log(`Tentando carregar CSV de: ${path}`);
+        console.log(`🔍 Tentando carregar 5DARQ.csv de: ${path}`);
         csvResponse = await fetch(path);
+        console.log(`📊 Status da resposta para ${path}:`, csvResponse.status);
+        
         if (csvResponse.ok) {
           csvPath = path;
+          console.log(`✅ 5DARQ.csv carregado com sucesso de: ${path}`);
           break;
+        } else {
+          console.log(`❌ Falha ao carregar 5DARQ.csv de ${path}: Status ${csvResponse.status}`);
         }
       } catch (e) {
-        console.log(`Falha ao carregar de ${path}:`, e);
+        console.log(`❌ Erro ao carregar 5DARQ.csv de ${path}:`, e);
       }
     }
     
@@ -42,6 +50,17 @@ export const carregarDados = async (): Promise<OrcamentoItem[]> => {
     console.log('📄 CSV carregado, processando dados...');
     console.log('📝 Primeiras 500 caracteres do CSV:', csvContent.substring(0, 500));
     console.log('📏 Tamanho total do CSV:', csvContent.length);
+    
+    // VALIDAÇÃO: Verificar se é realmente o arquivo de ARQUITETURA
+    if (csvContent.includes('PAVIMENTO TÉRREO') && csvContent.includes('PAREDES')) {
+      console.log('✅ CONFIRMADO: Arquivo 5DARQ.csv (ARQUITETURA) carregado corretamente');
+    } else if (csvContent.includes('Fundação') && csvContent.includes('Vigas')) {
+      console.log('❌ ERRO: Arquivo 5DEST.csv (ESTRUTURAL) foi carregado por engano!');
+      console.log('🔄 Tentando carregar novamente o arquivo correto...');
+      throw new Error('Arquivo errado carregado - 5DEST.csv em vez de 5DARQ.csv');
+    } else {
+      console.log('⚠️ AVISO: Não foi possível identificar o tipo de planilha');
+    }
     
     const dadosProcessados = processarDadosCSV5DARQ(csvContent);
     
