@@ -13,18 +13,33 @@ export const carregarDados = async (): Promise<OrcamentoItem[]> => {
     console.log('📂 Caminho atual:', window.location.pathname);
     
     // Tentar diferentes caminhos para o CSV - ESPECÍFICO PARA ARQUITETURA
-    const possiblePaths = ['/5DARQ.csv', './5DARQ.csv', '5DARQ.csv'];
+    // Adicionar timestamp para forçar bypass do cache
+    const timestamp = Date.now();
+    const possiblePaths = [
+      `/5DARQ.csv?t=${timestamp}`, 
+      `./5DARQ.csv?t=${timestamp}`, 
+      `5DARQ.csv?t=${timestamp}`
+    ];
     let csvResponse: Response | null = null;
     let csvPath = '';
     
     console.log('🏗️ ===== DASHBOARD ARQUITETURA - CARREGANDO PLANILHA =====');
     console.log('🎯 Buscando especificamente o arquivo 5DARQ.csv (ARQUITETURA)');
+    console.log('⏰ Timestamp para bypass de cache:', timestamp);
     
     for (const path of possiblePaths) {
       try {
         console.log(`🔍 Tentando carregar 5DARQ.csv de: ${path}`);
-        csvResponse = await fetch(path);
+        csvResponse = await fetch(path, {
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
         console.log(`📊 Status da resposta para ${path}:`, csvResponse.status);
+        console.log(`📋 Headers da resposta:`, Object.fromEntries(csvResponse.headers.entries()));
         
         if (csvResponse.ok) {
           csvPath = path;
@@ -51,15 +66,33 @@ export const carregarDados = async (): Promise<OrcamentoItem[]> => {
     console.log('📝 Primeiras 500 caracteres do CSV:', csvContent.substring(0, 500));
     console.log('📏 Tamanho total do CSV:', csvContent.length);
     
-    // VALIDAÇÃO: Verificar se é realmente o arquivo de ARQUITETURA
+    // VALIDAÇÃO ROBUSTA: Verificar se é realmente o arquivo de ARQUITETURA
+    console.log('🔍 ===== VALIDAÇÃO DO ARQUIVO CARREGADO =====');
+    console.log('📄 URL carregada:', csvPath);
+    console.log('📄 Primeiras linhas do arquivo:');
+    const firstLines = csvContent.split('\n').slice(0, 5);
+    firstLines.forEach((line, index) => {
+      console.log(`   Linha ${index + 1}: ${line}`);
+    });
+    
     if (csvContent.includes('PAVIMENTO TÉRREO') && csvContent.includes('PAREDES')) {
       console.log('✅ CONFIRMADO: Arquivo 5DARQ.csv (ARQUITETURA) carregado corretamente');
+      console.log('🏗️ Conteúdo de ARQUITETURA detectado: PAVIMENTO TÉRREO e PAREDES');
     } else if (csvContent.includes('Fundação') && csvContent.includes('Vigas')) {
-      console.log('❌ ERRO: Arquivo 5DEST.csv (ESTRUTURAL) foi carregado por engano!');
+      console.log('❌ ERRO CRÍTICO: Arquivo 5DEST.csv (ESTRUTURAL) foi carregado por engano!');
+      console.log('🏗️ Conteúdo de ESTRUTURAL detectado: Fundação e Vigas');
       console.log('🔄 Tentando carregar novamente o arquivo correto...');
       throw new Error('Arquivo errado carregado - 5DEST.csv em vez de 5DARQ.csv');
     } else {
       console.log('⚠️ AVISO: Não foi possível identificar o tipo de planilha');
+      console.log('📄 Conteúdo não reconhecido. Verificando se é arquivo válido...');
+      
+      // Verificar se contém dados de orçamento
+      if (csvContent.includes('Item') && csvContent.includes('Descrição')) {
+        console.log('📊 Arquivo parece ser uma planilha de orçamento válida');
+      } else {
+        console.log('❌ Arquivo não parece ser uma planilha de orçamento válida');
+      }
     }
     
     const dadosProcessados = processarDadosCSV5DARQ(csvContent);
