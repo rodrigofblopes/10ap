@@ -1,14 +1,10 @@
-name: Deploy DashboardArquitetura to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'DashBoardArquitetura/**'
   pull_request:
     branches: [ main ]
-    paths:
-      - 'DashBoardArquitetura/**'
 
 jobs:
   build-and-deploy:
@@ -23,16 +19,16 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: DashBoardArquitetura/dashboard-react/package-lock.json
+        cache-dependency-path: DashboardEstrutural/package-lock.json
         
     - name: Install dependencies
       run: |
-        cd DashBoardArquitetura/dashboard-react
+        cd DashboardEstrutural
         npm ci
         
     - name: Build
       run: |
-        cd DashBoardArquitetura/dashboard-react
+        cd DashboardEstrutural
         npm run build
         
     - name: Deploy to GitHub Pages
@@ -40,4 +36,4 @@ jobs:
       if: github.ref == 'refs/heads/main'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./DashBoardArquitetura/dashboard-react/dist
+        publish_dir: ./DashboardEstrutural/dist
