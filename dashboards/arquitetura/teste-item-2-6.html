@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Item 2.6</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .resultado { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .sucesso { background: #d4edda; color: #155724; }
+        .erro { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Carregamento da Planilha 5DARQ.csv</h1>
+    <div id="resultado"></div>
+
+    <script>
+        async function testarCarregamento() {
+            const resultado = document.getElementById('resultado');
+            
+            try {
+                console.log('🔍 Iniciando teste de carregamento...');
+                
+                // Carregar o arquivo CSV
+                const response = await fetch('./5DARQ.csv');
+                if (!response.ok) {
+                    throw new Error(`Erro ao carregar CSV: ${response.status}`);
+                }
+                
+                const csvContent = await response.text();
+                console.log('✅ CSV carregado com sucesso');
+                
+                // Processar o CSV
+                const lines = csvContent.split('\n');
+                console.log('📏 Total de linhas:', lines.length);
+                
+                let dados = [];
+                let item26Encontrado = false;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line || line.startsWith(';')) continue;
+                    
+                    const columns = line.split(';');
+                    if (columns.length >= 8) {
+                        const item = columns[0]?.trim();
+                        const descricao = columns[1]?.trim();
+                        const quantidade = parseFloat(columns[3]?.replace(',', '.') || '0');
+                        const totalStr = columns[6]?.trim() || '0';
+                        const totalFinal = parseFloat(totalStr.replace(/\./g, '').replace(',', '.') || '0');
+                        
+                        if (item && descricao && (quantidade > 0 || totalFinal > 0)) {
+                            dados.push({ item, descricao, total: totalFinal });
+                            
+                            if (item === '2.6') {
+                                item26Encontrado = true;
+                                console.log('🎯 Item 2.6 encontrado:', { item, descricao, total: totalFinal });
+                            }
+                        }
+                    }
+                }
+                
+                // Exibir resultados
+                resultado.innerHTML = `
+                    <div class="resultado ${item26Encontrado ? 'sucesso' : 'erro'}">
+                        <h3>${item26Encontrado ? '✅ SUCESSO' : '❌ ERRO'}</h3>
+                        <p><strong>Total de itens processados:</strong> ${dados.length}</p>
+                        <p><strong>Item 2.6 encontrado:</strong> ${item26Encontrado ? 'SIM' : 'NÃO'}</p>
+                        <p><strong>Itens encontrados:</strong> ${dados.map(d => d.item).join(', ')}</p>
+                    </div>
+                `;
+                
+                if (item26Encontrado) {
+                    console.log('✅ TESTE PASSOU: Item 2.6 foi processado corretamente');
+                } else {
+                    console.log('❌ TESTE FALHOU: Item 2.6 não foi encontrado');
+                }
+                
+            } catch (error) {
+                console.error('❌ Erro no teste:', error);
+                resultado.innerHTML = `
+                    <div class="resultado erro">
+                        <h3>❌ ERRO</h3>
+                        <p><strong>Erro:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Executar teste quando a página carregar
+        testarCarregamento();
+    </script>
+</body>
+</html>

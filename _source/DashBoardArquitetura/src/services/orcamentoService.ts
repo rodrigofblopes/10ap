@@ -352,25 +352,30 @@ export const processarDadosCSV5DARQ = (csvContent: string): OrcamentoItem[] => {
       if (item === '1' || item === '2' || item === '3') {
         isEtapaTotal = true;
         if (item === '1') {
-          categoria = 'Fundação';
+          categoria = 'Térreo';
           subcategoria = 'Total';
         } else if (item === '2') {
-          categoria = 'Térreo';
+          categoria = 'Superior';
           subcategoria = 'Total';
         } else if (item === '3') {
           categoria = 'Pavimento Superior';
           subcategoria = 'Total';
         }
       } else if (item.startsWith('1.')) {
-        categoria = 'Fundação';
-        if (item === '1.1') subcategoria = 'Vigas';
-        else if (item === '1.2') subcategoria = 'Pilares';
-        else if (item === '1.3') subcategoria = 'Fundações';
-      } else if (item.startsWith('2.')) {
         categoria = 'Térreo';
-        if (item === '2.1') subcategoria = 'Vigas';
-        else if (item === '2.2') subcategoria = 'Pilares';
-        else if (item === '2.3') subcategoria = 'Lajes';
+        if (item === '1.1') subcategoria = 'Paredes';
+        else if (item === '1.2') subcategoria = 'Piso';
+        else if (item === '1.3') subcategoria = 'Revestimento';
+        else if (item === '1.4') subcategoria = 'Forro';
+        else if (item === '1.5') subcategoria = 'Esquadrias';
+      } else if (item.startsWith('2.')) {
+        categoria = 'Superior';
+        if (item === '2.1') subcategoria = 'Paredes';
+        else if (item === '2.2') subcategoria = 'Piso';
+        else if (item === '2.3') subcategoria = 'Revestimento';
+        else if (item === '2.4') subcategoria = 'Forro';
+        else if (item === '2.5') subcategoria = 'Esquadrias';
+        else if (item === '2.6') subcategoria = 'Telhado';
       } else if (item.startsWith('3.')) {
         categoria = 'Pavimento Superior';
         if (item === '3.1') subcategoria = 'Vigas';
