@@ -1,0 +1,5 @@
+[33mf4285ea[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Adicionar scripts de diagnóstico para investigar problema do item 2.6 no deploy
+[33m9039e86[m Corrigir processamento CSV para incluir todos os itens até 2.6
+[33m289713f[m fix: Corrigir dados de fallback para ARQUITETURA e resolver erro 404 do CSV
+[33mddb46fc[m fix: Resolver problema persistente da planilha no deploy
+[33m69dfc36[m fix: Corrigir problema da planilha no DashboardArquitetura

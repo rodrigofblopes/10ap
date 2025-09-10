@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico: Local vs Deploy</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .resultado { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .sucesso { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .erro { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .info { background: #d1ecf1; color: #0c5460; border-left: 4px solid #17a2b8; }
+        .aviso { background: #fff3cd; color: #856404; border-left: 4px solid #ffc107; }
+        .diferenca { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 3px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+        .comparacao { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .item { background: #f8f9fa; padding: 8px; margin: 4px 0; border-radius: 4px; }
+        .item-local { border-left: 3px solid #28a745; }
+        .item-deploy { border-left: 3px solid #dc3545; }
+        .item-igual { border-left: 3px solid #17a2b8; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnóstico: Local vs Deploy</h1>
+    <p>Este diagnóstico identifica exatamente por que funciona localmente mas não no deploy.</p>
+    
+    <div class="grid">
+        <div>
+            <h3>Testes de Diagnóstico</h3>
+            <button onclick="diagnosticarCompleto()">🔍 Diagnóstico Completo</button>
+            <button onclick="verificarCache()">🗄️ Verificar Cache</button>
+            <button onclick="verificarArquivos()">📁 Verificar Arquivos</button>
+            <button onclick="verificarJavaScript()">⚙️ Verificar JavaScript</button>
+            <button onclick="limparTudo()">🧹 Limpar</button>
+        </div>
+        <div>
+            <h3>Informações do Ambiente</h3>
+            <div class="resultado info">
+                <p><strong>URL:</strong> <span id="urlAtual"></span></p>
+                <p><strong>Host:</strong> <span id="host"></span></p>
+                <p><strong>Protocolo:</strong> <span id="protocolo"></span></p>
+                <p><strong>Timestamp:</strong> <span id="timestamp"></span></p>
+                <p><strong>User Agent:</strong> <span id="userAgent"></span></p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="resultado"></div>
+    <div id="log" class="log" style="display: none;"></div>
+
+    <script>
+        // Inicializar informações do ambiente
+        document.getElementById('urlAtual').textContent = window.location.href;
+        document.getElementById('host').textContent = window.location.host;
+        document.getElementById('protocolo').textContent = window.location.protocol;
+        document.getElementById('timestamp').textContent = new Date().toLocaleString('pt-BR');
+        document.getElementById('userAgent').textContent = navigator.userAgent.substring(0, 100) + '...';
+
+        function log(mensagem) {
+            const logDiv = document.getElementById('log');
+            logDiv.style.display = 'block';
+            logDiv.innerHTML += `[${new Date().toLocaleTimeString()}] ${mensagem}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(mensagem);
+        }
+
+        function limparTudo() {
+            document.getElementById('resultado').innerHTML = '';
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('log').style.display = 'none';
+        }
+
+        async function diagnosticarCompleto() {
+            log('🚀 Iniciando diagnóstico completo Local vs Deploy...');
+            await verificarCache();
+            await verificarArquivos();
+            await verificarJavaScript();
+            log('✅ Diagnóstico completo finalizado');
+        }
+
+        async function verificarCache() {
+            log('🗄️ Verificando cache do navegador...');
+            const resultado = document.getElementById('resultado');
+            
+            try {
+                const timestamp = Date.now();
+                const urls = [
+                    `./5DARQ.csv?t=${timestamp}`,
+                    `./5DARQ.csv?nocache=${Math.random()}`,
+                    `./5DARQ.csv?v=${Date.now()}`
+                ];
+                
+                let resultados = [];
+                let cacheDetectado = false;
+                
+                for (const url of urls) {
+                    const start = performance.now();
+                    const response = await fetch(url, { 
+                        cache: 'no-cache',
+                        headers: {
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
+                        }
+                    });
+                    const end = performance.now();
+                    const tempo = end - start;
+                    
+                    const content = await response.text();
+                    const temItem26 = content.includes('2.6');
+                    
+                    resultados.push({
+                        url: url,
+                        status: response.status,
+                        tempo: tempo.toFixed(2),
+                        temItem26: temItem26,
+                        tamanho: content.length
+                    });
+                    
+                    log(`🔍 ${url}: Status ${response.status}, Tempo ${tempo.toFixed(2)}ms, Item 2.6: ${temItem26 ? 'SIM' : 'NÃO'}`);
+                    
+                    if (tempo < 10 && response.status === 200) {
+                        cacheDetectado = true;
+                    }
+                }
+                
+                resultado.innerHTML += `
+                    <div class="resultado ${cacheDetectado ? 'aviso' : 'info'}">
+                        <h3>🗄️ Verificação de Cache - ${cacheDetectado ? '⚠️ CACHE DETECTADO' : '✅ SEM CACHE'}</h3>
+                        <p><strong>Cache detectado:</strong> ${cacheDetectado ? 'SIM (tempos muito baixos)' : 'NÃO'}</p>
+                        <div class="comparacao">
+                            ${resultados.map(r => `
+                                <div class="item ${r.temItem26 ? 'item-igual' : 'item-deploy'}">
+                                    <strong>${r.url}</strong><br>
+                                    Status: ${r.status}<br>
+                                    Tempo: ${r.tempo}ms<br>
+                                    Item 2.6: ${r.temItem26 ? '✅ SIM' : '❌ NÃO'}<br>
+                                    Tamanho: ${r.tamanho} chars
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${cacheDetectado ? '<p style="color: orange;"><strong>💡 Solução:</strong> Use Ctrl+F5 para forçar reload sem cache</p>' : ''}
+                    </div>
+                `;
+                
+            } catch (error) {
+                log(`❌ Erro ao verificar cache: ${error.message}`);
+                resultado.innerHTML += `
+                    <div class="resultado erro">
+                        <h3>🗄️ Verificação de Cache - ❌ ERRO</h3>
+                        <p><strong>Erro:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function verificarArquivos() {
+            log('📁 Verificando arquivos do deploy...');
+            const resultado = document.getElementById('resultado');
+            
+            try {
+                const timestamp = Date.now();
+                const url = `./5DARQ.csv?t=${timestamp}`;
+                
+                const response = await fetch(url, { cache: 'no-cache' });
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                
+                const content = await response.text();
+                const lines = content.split('\n');
+                
+                // Verificar se contém item 2.6
+                let item26Encontrado = false;
+                let item26Linha = null;
+                let totalLinhas = lines.length;
+                
+                lines.forEach((line, index) => {
+                    if (line.includes('2.6')) {
+                        item26Encontrado = true;
+                        item26Linha = index + 1;
+                    }
+                });
+                
+                // Verificar se contém todos os itens esperados
+                const itensEsperados = ['1.1', '1.2', '1.3', '1.4', '1.5', '2.1', '2.2', '2.3', '2.4', '2.5', '2.6'];
+                const itensEncontrados = itensEsperados.filter(item => 
+                    lines.some(line => line.includes(item))
+                );
+                
+                log(`📊 Total de linhas: ${totalLinhas}`);
+                log(`🎯 Item 2.6 encontrado: ${item26Encontrado ? 'SIM' : 'NÃO'}`);
+                log(`📋 Itens encontrados: ${itensEncontrados.length}/${itensEsperados.length}`);
+                
+                resultado.innerHTML += `
+                    <div class="resultado ${item26Encontrado ? 'sucesso' : 'erro'}">
+                        <h3>📁 Verificação de Arquivos - ${item26Encontrado ? '✅ SUCESSO' : '❌ PROBLEMA'}</h3>
+                        <p><strong>Arquivo:</strong> ${url}</p>
+                        <p><strong>Total de linhas:</strong> ${totalLinhas}</p>
+                        <p><strong>Item 2.6 encontrado:</strong> ${item26Encontrado ? 'SIM' : 'NÃO'}</p>
+                        ${item26Linha ? `<p><strong>Linha do item 2.6:</strong> ${item26Linha}</p>` : ''}
+                        <p><strong>Itens encontrados:</strong> ${itensEncontrados.length}/${itensEsperados.length}</p>
+                        <div style="margin-top: 10px;">
+                            <strong>Itens esperados:</strong> ${itensEsperados.join(', ')}<br>
+                            <strong>Itens encontrados:</strong> ${itensEncontrados.join(', ')}<br>
+                            <strong>Itens faltando:</strong> ${itensEsperados.filter(item => !itensEncontrados.includes(item)).join(', ') || 'Nenhum'}
+                        </div>
+                        ${!item26Encontrado ? '<p style="color: red; font-weight: bold;">❌ PROBLEMA: O arquivo CSV no deploy não contém o item 2.6!</p>' : ''}
+                    </div>
+                `;
+                
+            } catch (error) {
+                log(`❌ Erro ao verificar arquivos: ${error.message}`);
+                resultado.innerHTML += `
+                    <div class="resultado erro">
+                        <h3>📁 Verificação de Arquivos - ❌ ERRO</h3>
+                        <p><strong>Erro:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function verificarJavaScript() {
+            log('⚙️ Verificando JavaScript compilado...');
+            const resultado = document.getElementById('resultado');
+            
+            try {
+                // Verificar se o código JavaScript contém as correções
+                const jsFiles = document.querySelectorAll('script[src*="assets/index-"]');
+                log(`🔍 Encontrados ${jsFiles.length} arquivos JavaScript`);
+                
+                let correcoesEncontradas = false;
+                let detalhes = [];
+                
+                for (const script of jsFiles) {
+                    const response = await fetch(script.src, { cache: 'no-cache' });
+                    if (response.ok) {
+                        const jsContent = await response.text();
+                        
+                        // Verificar se contém as correções para 2.6
+                        const temCorrecoes = jsContent.includes('2.6') && jsContent.includes('Telhado');
+                        const temCategorizacao = jsContent.includes('Superior') && jsContent.includes('Térreo');
+                        
+                        detalhes.push({
+                            arquivo: script.src,
+                            temCorrecoes: temCorrecoes,
+                            temCategorizacao: temCategorizacao,
+                            tamanho: jsContent.length
+                        });
+                        
+                        if (temCorrecoes) {
+                            correcoesEncontradas = true;
+                            log(`✅ Correções encontradas no arquivo: ${script.src}`);
+                        } else {
+                            log(`⚠️ Correções não encontradas no arquivo: ${script.src}`);
+                        }
+                    }
+                }
+                
+                resultado.innerHTML += `
+                    <div class="resultado ${correcoesEncontradas ? 'sucesso' : 'erro'}">
+                        <h3>⚙️ Verificação JavaScript - ${correcoesEncontradas ? '✅ SUCESSO' : '❌ PROBLEMA'}</h3>
+                        <p><strong>Arquivos JavaScript encontrados:</strong> ${jsFiles.length}</p>
+                        <p><strong>Correções para 2.6 encontradas:</strong> ${correcoesEncontradas ? 'SIM' : 'NÃO'}</p>
+                        <div style="margin-top: 10px;">
+                            ${detalhes.map(d => `
+                                <div class="item ${d.temCorrecoes ? 'item-igual' : 'item-deploy'}">
+                                    <strong>${d.arquivo}</strong><br>
+                                    Correções 2.6: ${d.temCorrecoes ? '✅ SIM' : '❌ NÃO'}<br>
+                                    Categorização: ${d.temCategorizacao ? '✅ SIM' : '❌ NÃO'}<br>
+                                    Tamanho: ${d.tamanho} chars
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${!correcoesEncontradas ? '<p style="color: red; font-weight: bold;">❌ PROBLEMA: O JavaScript compilado não contém as correções!</p>' : ''}
+                    </div>
+                `;
+                
+            } catch (error) {
+                log(`❌ Erro ao verificar JavaScript: ${error.message}`);
+                resultado.innerHTML += `
+                    <div class="resultado erro">
+                        <h3>⚙️ Verificação JavaScript - ❌ ERRO</h3>
+                        <p><strong>Erro:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Executar diagnóstico automático
+        window.addEventListener('load', () => {
+            log('🚀 Página carregada, iniciando diagnóstico automático...');
+            setTimeout(diagnosticarCompleto, 1000);
+        });
+    </script>
+</body>
+</html>
