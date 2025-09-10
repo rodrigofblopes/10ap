@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste CSV - Deploy</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .resultado { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .sucesso { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .erro { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        .info { background: #d1ecf1; color: #0c5460; border-left: 4px solid #17a2b8; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 3px; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Teste de Acesso ao CSV no Deploy</h1>
+    <p>Este teste verifica se o arquivo 5DARQ.csv está sendo servido corretamente pelo Vercel.</p>
+    
+    <button onclick="testarCSV()">🔍 Testar Acesso ao CSV</button>
+    <button onclick="limparLog()">🧹 Limpar Log</button>
+    
+    <div id="resultado"></div>
+    <div id="log" class="log" style="display: none;"></div>
+
+    <script>
+        function log(mensagem) {
+            const logDiv = document.getElementById('log');
+            logDiv.style.display = 'block';
+            logDiv.innerHTML += `[${new Date().toLocaleTimeString()}] ${mensagem}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(mensagem);
+        }
+
+        function limparLog() {
+            document.getElementById('resultado').innerHTML = '';
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('log').style.display = 'none';
+        }
+
+        async function testarCSV() {
+            log('🚀 Iniciando teste de acesso ao CSV...');
+            const resultado = document.getElementById('resultado');
+            
+            const urls = [
+                './5DARQ.csv',
+                '/5DARQ.csv',
+                '5DARQ.csv',
+                './5DARQ.csv?t=' + Date.now(),
+                '/5DARQ.csv?t=' + Date.now()
+            ];
+            
+            let sucesso = false;
+            let dadosCSV = null;
+            
+            for (const url of urls) {
+                try {
+                    log(`🔍 Testando URL: ${url}`);
+                    const response = await fetch(url, { 
+                        cache: 'no-cache',
+                        headers: {
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
+                        }
+                    });
+                    
+                    log(`📊 Status: ${response.status} ${response.statusText}`);
+                    log(`📋 Content-Type: ${response.headers.get('Content-Type')}`);
+                    log(`📏 Content-Length: ${response.headers.get('Content-Length')}`);
+                    
+                    if (response.ok) {
+                        const content = await response.text();
+                        log(`✅ CSV carregado com sucesso! Tamanho: ${content.length} caracteres`);
+                        log(`📄 Primeiras 200 caracteres: ${content.substring(0, 200)}...`);
+                        
+                        // Verificar se contém item 2.6
+                        const temItem26 = content.includes('2.6');
+                        log(`🎯 Contém item 2.6: ${temItem26 ? 'SIM' : 'NÃO'}`);
+                        
+                        if (temItem26) {
+                            sucesso = true;
+                            dadosCSV = content;
+                            break;
+                        }
+                    } else {
+                        log(`❌ Erro ${response.status}: ${response.statusText}`);
+                    }
+                } catch (error) {
+                    log(`❌ Erro ao acessar ${url}: ${error.message}`);
+                }
+            }
+            
+            if (sucesso) {
+                resultado.innerHTML = `
+                    <div class="resultado sucesso">
+                        <h3>✅ CSV Acessível</h3>
+                        <p><strong>Arquivo:</strong> 5DARQ.csv</p>
+                        <p><strong>Tamanho:</strong> ${dadosCSV.length} caracteres</p>
+                        <p><strong>Item 2.6:</strong> ✅ Encontrado</p>
+                        <p><strong>Status:</strong> O arquivo está sendo servido corretamente pelo Vercel</p>
+                    </div>
+                `;
+            } else {
+                resultado.innerHTML = `
+                    <div class="resultado erro">
+                        <h3>❌ CSV Não Acessível</h3>
+                        <p><strong>Problema:</strong> O arquivo 5DARQ.csv não está sendo servido pelo Vercel</p>
+                        <p><strong>Possíveis causas:</strong></p>
+                        <ul>
+                            <li>Arquivo não foi enviado para o deploy</li>
+                            <li>Configuração do Vercel bloqueando arquivos CSV</li>
+                            <li>Problema de cache do CDN</li>
+                            <li>Arquivo corrompido durante o upload</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        // Executar teste automático
+        window.addEventListener('load', () => {
+            log('🚀 Página carregada, iniciando teste automático...');
+            setTimeout(testarCSV, 1000);
+        });
+    </script>
+</body>
+</html>

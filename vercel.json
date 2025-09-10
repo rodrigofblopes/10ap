@@ -1,3 +1,24 @@
 {
-  "version": 2
+  "version": 2,
+  "headers": [
+    {
+      "source": "/(.*\\.csv)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/csv; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/dashboards/arquitetura/(.*)",
+      "destination": "/dashboards/arquitetura/$1"
+    }
+  ]
 }
