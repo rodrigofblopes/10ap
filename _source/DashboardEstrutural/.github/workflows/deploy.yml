@@ -19,16 +19,16 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: DashboardEstrutural/package-lock.json
+        cache-dependency-path: _source/DashboardEstrutural/package-lock.json
         
     - name: Install dependencies
       run: |
-        cd DashboardEstrutural
+        cd _source/DashboardEstrutural
         npm ci
         
     - name: Build
       run: |
-        cd DashboardEstrutural
+        cd _source/DashboardEstrutural
         npm run build
         
     - name: Deploy to GitHub Pages
@@ -36,4 +36,4 @@ jobs:
       if: github.ref == 'refs/heads/main'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./DashboardEstrutural/dist
+        publish_dir: ./_source/DashboardEstrutural/dist
