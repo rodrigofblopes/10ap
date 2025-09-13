@@ -34,6 +34,9 @@ export const carregarDados = async (): Promise<OrcamentoItem[]> => {
     // Adicionar timestamp para forçar bypass do cache
     const timestamp = Date.now();
     const possiblePaths = [
+      `/5D.csv?t=${timestamp}`, 
+      `./5D.csv?t=${timestamp}`, 
+      `5D.csv?t=${timestamp}`,
       `/5d.csv?t=${timestamp}`, 
       `./5d.csv?t=${timestamp}`, 
       `5d.csv?t=${timestamp}`
