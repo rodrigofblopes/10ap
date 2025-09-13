@@ -4,7 +4,7 @@
   "description": "Hub Central de Projetos - Lote 10x30 - 10 Apartamentos",
   "main": "index.html",
   "scripts": {
-    "build": "cd _source/5D && npm install && npm run build && node -e \"const fs=require('fs');const path=require('path');function copyDir(src,dest){if(!fs.existsSync(dest))fs.mkdirSync(dest,{recursive:true});const entries=fs.readdirSync(src,{withFileTypes:true});for(let entry of entries){const srcPath=path.join(src,entry.name);const destPath=path.join(dest,entry.name);if(entry.isDirectory()){copyDir(srcPath,destPath);}else{fs.copyFileSync(srcPath,destPath);}}}copyDir('dist','../../');\"",
+    "build": "cd _source/5D && npm ci && npm run build",
     "start": "echo 'Static site - no start needed'",
     "vercel-build": "npm run build"
   },
