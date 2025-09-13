@@ -1277,6 +1277,10 @@ function StructuralModel({ highlightedElements, hiddenElements, onElementsExtrac
   
   // Extrair elementos e aplicar textura de concreto
   useEffect(() => {
+    console.log('🔍 ===== INICIANDO EXTRAÇÃO DE ELEMENTOS =====');
+    console.log('🔍 Scene disponível?', !!scene);
+    console.log('🔍 onElementsExtracted disponível?', !!onElementsExtracted);
+    
     if (scene && onElementsExtracted) {
       const elements: string[] = [];
       const collections: { [key: string]: THREE.Object3D[] } = {};
@@ -1443,7 +1447,12 @@ function StructuralModel({ highlightedElements, hiddenElements, onElementsExtrac
       
       console.log('📦 ===== TODOS OS ELEMENTOS (ORDENADOS) =====');
       console.log('📦 Lista completa ordenada:', elements.sort());
+      console.log('📦 Total de elementos extraídos:', elements.length);
+      console.log('📦 Chamando onElementsExtracted com', elements.length, 'elementos');
       onElementsExtracted(elements);
+      console.log('✅ onElementsExtracted chamado com sucesso!');
+    } else {
+      console.log('❌ Não foi possível extrair elementos - Scene ou onElementsExtracted não disponível');
     }
   }, [scene, onElementsExtracted]);
 
@@ -2049,7 +2058,12 @@ export default function Viewer5D() {
   }, [itens]);
   
   const handleElementsExtracted = useCallback((elements: string[]) => {
+    console.log('🎯 ===== ELEMENTOS RECEBIDOS DO MODELO 3D =====');
+    console.log('🎯 Total de elementos recebidos:', elements.length);
+    console.log('🎯 Primeiros 10 elementos:', elements.slice(0, 10));
+    console.log('🎯 Chamando setGlbElements...');
     setGlbElements(elements);
+    console.log('✅ setGlbElements chamado com sucesso!');
   }, [setGlbElements]);
 
   const highlightElementsByCategory = (categoryCode: string) => {
