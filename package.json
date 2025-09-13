@@ -4,9 +4,8 @@
   "description": "Hub Central de Projetos - Lote 10x30 - 10 Apartamentos",
   "main": "index.html",
   "scripts": {
-    "build": "cd _source/5D && npm ci && npm run build",
-    "start": "echo 'Static site - no start needed'",
-    "vercel-build": "npm run build"
+    "build": "echo 'Build handled by Vercel'",
+    "start": "echo 'Static site - no start needed'"
   },
   "keywords": ["static", "site", "dashboard", "arquitetura", "estrutural"],
   "author": "Bonfim Imobiliária e Engenharia",

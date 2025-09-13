@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Modelo Atualizado - Análise Completa</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #ffd700, #ffeb3b);
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .section {
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .result {
+            background: #001122;
+            border-left: 4px solid #00aaff;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .success { border-left-color: #00ff00; background: #002200; }
+        .error { border-left-color: #ff0000; background: #220000; }
+        .warning { border-left-color: #ffaa00; background: #221100; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        canvas { border: 2px solid #555; margin: 10px 0; }
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .data-card {
+            background: #333;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #00aaff;
+        }
+        pre {
+            background: #111;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 11px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 DEBUG MODELO ATUALIZADO</h1>
+        <p>Análise completa do novo modelo GLB (1.288 KB)</p>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Análise Rápida</h2>
+        <button onclick="analisarModeloCompleto()">🔍 Analisar Modelo Completo</button>
+        <button onclick="verificarVisibilidade()">👁️ Verificar Visibilidade</button>
+        <button onclick="analisarPorCategoria()">📊 Analisar por Categoria</button>
+        <button onclick="testarTodosVisiveis()">⚡ Forçar Todos Visíveis</button>
+        <button onclick="limparLog()">🧹 Limpar</button>
+    </div>
+
+    <div class="section">
+        <h2>📊 Estatísticas do Modelo</h2>
+        <div id="stats" class="data-grid">
+            <div class="data-card">
+                <strong>Total de Elementos:</strong>
+                <div id="total-elements">Carregando...</div>
+            </div>
+            <div class="data-card">
+                <strong>Elementos Visíveis:</strong>
+                <div id="visible-elements">Carregando...</div>
+            </div>
+            <div class="data-card">
+                <strong>Fundação:</strong>
+                <div id="fundacao-count">Carregando...</div>
+            </div>
+            <div class="data-card">
+                <strong>Térreo:</strong>
+                <div id="terreo-count">Carregando...</div>
+            </div>
+            <div class="data-card">
+                <strong>Superior:</strong>
+                <div id="superior-count">Carregando...</div>
+            </div>
+            <div class="data-card">
+                <strong>Outros:</strong>
+                <div id="outros-count">Carregando...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultados" class="section">
+        <h2>📋 Log de Análise</h2>
+        <div id="log">Clique em "Analisar Modelo Completo" para começar...</div>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Visualização 3D</h2>
+        <canvas id="canvas3d" width="800" height="400"></canvas>
+        <br>
+        <button onclick="resetarCamera()">📷 Reset Câmera</button>
+        <button onclick="mostrarTodos()">👁️ Mostrar Todos</button>
+        <button onclick="ocultarFundacao()">🚫 Ocultar Fundação</button>
+        <button onclick="mostrarSoTerreo()">🏠 Só Térreo</button>
+    </div>
+
+    <div class="section">
+        <h2>📄 Lista de Elementos</h2>
+        <div id="elementos-lista">
+            <pre id="elementos-detalhes">Carregue o modelo primeiro...</pre>
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, model;
+        let modeloCarregado = false;
+        let elementos = [];
+
+        function log(message, type = 'result') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const classes = {
+                'success': 'success',
+                'error': 'error',
+                'warning': 'warning',
+                'result': 'result'
+            };
+            
+            logDiv.innerHTML += `<div class="result ${classes[type]}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function atualizarStats() {
+            if (!modeloCarregado) return;
+            
+            let total = 0, visible = 0, fundacao = 0, terreo = 0, superior = 0, outros = 0;
+            
+            model.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    total++;
+                    if (child.visible) visible++;
+                    
+                    const nome = child.name.toLowerCase();
+                    if (nome.includes('3.') || nome.includes('fundacao') || nome.includes('fund')) {
+                        fundacao++;
+                    } else if (nome.includes('1.') || nome.includes('4.') || nome.includes('terreo')) {
+                        terreo++;
+                    } else if (nome.includes('2.') || nome.includes('5.') || nome.includes('superior')) {
+                        superior++;
+                    } else {
+                        outros++;
+                    }
+                }
+            });
+            
+            document.getElementById('total-elements').textContent = total;
+            document.getElementById('visible-elements').textContent = visible;
+            document.getElementById('fundacao-count').textContent = fundacao;
+            document.getElementById('terreo-count').textContent = terreo;
+            document.getElementById('superior-count').textContent = superior;
+            document.getElementById('outros-count').textContent = outros;
+        }
+
+        function inicializarVisualizacao() {
+            const canvas = document.getElementById('canvas3d');
+            
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x202020);
+
+            camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+            camera.position.set(20, 20, 20);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(800, 400);
+            renderer.shadowMap.enabled = true;
+
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(50, 50, 50);
+            scene.add(directionalLight);
+
+            render();
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+        function limparLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        async function analisarModeloCompleto() {
+            log('🔄 === ANÁLISE COMPLETA DO MODELO ATUALIZADO ===', 'result');
+            
+            try {
+                const loader = new THREE.GLTFLoader();
+                
+                loader.load('./5d.glb', 
+                    function(gltf) {
+                        log('✅ Modelo GLB carregado com sucesso!', 'success');
+                        model = gltf.scene;
+                        scene.add(model);
+                        modeloCarregado = true;
+                        
+                        analisarEstrutura();
+                        atualizarStats();
+                        listarElementos();
+                        render();
+                    },
+                    function(progress) {
+                        const percentual = (progress.loaded / progress.total * 100).toFixed(1);
+                        log(`📈 Progresso: ${percentual}%`, 'result');
+                    },
+                    function(error) {
+                        log(`❌ Erro ao carregar: ${error}`, 'error');
+                    }
+                );
+                
+            } catch (error) {
+                log(`❌ Erro na análise: ${error}`, 'error');
+            }
+        }
+
+        function analisarEstrutura() {
+            log('🏗️ === ANÁLISE ESTRUTURAL DETALHADA ===', 'result');
+            
+            let stats = {
+                total: 0,
+                visible: 0,
+                ocultos: 0,
+                categorias: {
+                    fundacao: [],
+                    terreo: [],
+                    superior: [],
+                    outros: []
+                }
+            };
+            
+            model.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    stats.total++;
+                    
+                    if (child.visible) {
+                        stats.visible++;
+                    } else {
+                        stats.ocultos++;
+                    }
+                    
+                    const nome = child.name.toLowerCase();
+                    if (nome.includes('3.') || nome.includes('fundacao') || nome.includes('fund')) {
+                        stats.categorias.fundacao.push(child.name);
+                    } else if (nome.includes('1.') || nome.includes('4.') || nome.includes('terreo')) {
+                        stats.categorias.terreo.push(child.name);
+                    } else if (nome.includes('2.') || nome.includes('5.') || nome.includes('superior')) {
+                        stats.categorias.superior.push(child.name);
+                    } else {
+                        stats.categorias.outros.push(child.name);
+                    }
+                }
+            });
+            
+            log(`📊 Total de elementos: ${stats.total}`, 'result');
+            log(`👁️ Elementos visíveis: ${stats.visible}`, stats.visible === stats.total ? 'success' : 'warning');
+            log(`🚫 Elementos ocultos: ${stats.ocultos}`, stats.ocultos > 0 ? 'warning' : 'success');
+            
+            log(`🏗️ Fundação: ${stats.categorias.fundacao.length} elementos`, 'result');
+            log(`🏠 Térreo: ${stats.categorias.terreo.length} elementos`, 'result');
+            log(`🏢 Superior: ${stats.categorias.superior.length} elementos`, 'result');
+            log(`❓ Outros: ${stats.categorias.outros.length} elementos`, 'result');
+            
+            // Problema identificado?
+            if (stats.categorias.fundacao.length > 0 && 
+                stats.categorias.terreo.length === 0 && 
+                stats.categorias.superior.length === 0) {
+                log('🚨 PROBLEMA IDENTIFICADO: Apenas elementos de fundação!', 'error');
+                log('💡 Possível causa: Modelo contém apenas fundação ou elementos estão ocultos', 'warning');
+            }
+            
+            if (stats.ocultos > 0) {
+                log(`⚠️ ATENÇÃO: ${stats.ocultos} elementos estão ocultos!`, 'warning');
+            }
+            
+            // Expor dados globalmente
+            window.modelStats = stats;
+        }
+
+        function listarElementos() {
+            if (!modeloCarregado) return;
+            
+            elementos = [];
+            model.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    elementos.push({
+                        nome: child.name,
+                        visivel: child.visible,
+                        posicao: `(${child.position.x.toFixed(2)}, ${child.position.y.toFixed(2)}, ${child.position.z.toFixed(2)})`,
+                        categoria: categorizar(child.name)
+                    });
+                }
+            });
+            
+            let texto = `LISTA COMPLETA DE ELEMENTOS (${elementos.length}):\n\n`;
+            elementos.forEach((el, i) => {
+                texto += `${i+1}. "${el.nome}" [${el.categoria}] - ${el.visivel ? 'VISÍVEL' : 'OCULTO'} - ${el.posicao}\n`;
+            });
+            
+            document.getElementById('elementos-detalhes').textContent = texto;
+        }
+
+        function categorizar(nome) {
+            const n = nome.toLowerCase();
+            if (n.includes('3.') || n.includes('fundacao')) return 'FUNDAÇÃO';
+            if (n.includes('1.') || n.includes('4.')) return 'TÉRREO';
+            if (n.includes('2.') || n.includes('5.')) return 'SUPERIOR';
+            return 'OUTROS';
+        }
+
+        function verificarVisibilidade() {
+            if (!modeloCarregado) {
+                log('❌ Carregue o modelo primeiro', 'error');
+                return;
+            }
+            
+            log('👁️ === VERIFICAÇÃO DE VISIBILIDADE ===', 'result');
+            
+            let ocultos = [];
+            model.traverse((child) => {
+                if (child instanceof THREE.Mesh && !child.visible) {
+                    ocultos.push(child.name);
+                }
+            });
+            
+            if (ocultos.length > 0) {
+                log(`⚠️ ${ocultos.length} elementos ocultos encontrados:`, 'warning');
+                ocultos.slice(0, 20).forEach(nome => {
+                    log(`   - ${nome}`, 'warning');
+                });
+                if (ocultos.length > 20) {
+                    log(`   ... e mais ${ocultos.length - 20} elementos`, 'warning');
+                }
+            } else {
+                log('✅ Todos os elementos estão visíveis', 'success');
+            }
+        }
+
+        function testarTodosVisiveis() {
+            if (!modeloCarregado) {
+                log('❌ Carregue o modelo primeiro', 'error');
+                return;
+            }
+            
+            log('⚡ Forçando todos os elementos visíveis...', 'result');
+            
+            let count = 0;
+            model.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    child.visible = true;
+                    count++;
+                }
+            });
+            
+            log(`✅ ${count} elementos tornados visíveis`, 'success');
+            atualizarStats();
+            render();
+        }
+
+        function resetarCamera() {
+            camera.position.set(20, 20, 20);
+            camera.lookAt(0, 0, 0);
+            render();
+        }
+
+        function mostrarTodos() {
+            testarTodosVisiveis();
+        }
+
+        window.onload = function() {
+            inicializarVisualizacao();
+            log('🚀 Debug inicializado. Execute "Analisar Modelo Completo"', 'success');
+        };
+    </script>
+</body>
+</html>

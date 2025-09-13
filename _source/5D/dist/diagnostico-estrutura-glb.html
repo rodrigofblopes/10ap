@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico - Estrutura GLB</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .element { padding: 5px; margin: 2px 0; background: #f9f9f9; border-left: 3px solid #007bff; }
+        .group { background: #e8f4fd; border-left: 3px solid #007bff; padding: 10px; margin: 5px 0; }
+        .error { color: red; background: #ffe6e6; padding: 10px; }
+        .success { color: green; background: #e6ffe6; padding: 10px; }
+        pre { background: #f8f9fa; padding: 10px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnóstico da Estrutura GLB</h1>
+        
+        <div class="section">
+            <h2>📊 Status</h2>
+            <div id="status">Carregando...</div>
+        </div>
+        
+        <div class="section">
+            <h2>🗂️ Estrutura da Scene</h2>
+            <div id="estrutura"></div>
+        </div>
+        
+        <div class="section">
+            <h2>📋 Todos os Elementos</h2>
+            <div id="elementos"></div>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Mapeamento por Padrão</h2>
+            <div id="mapeamento"></div>
+        </div>
+        
+        <div class="section">
+            <h2>📄 Sugestão para CSV</h2>
+            <pre id="csvSugestao"></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'https://cdn.skypack.dev/three@0.137.5';
+        import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.137.5/examples/jsm/loaders/GLTFLoader.js';
+
+        const statusDiv = document.getElementById('status');
+        const estruturaDiv = document.getElementById('estrutura');
+        const elementosDiv = document.getElementById('elementos');
+        const mapeamentoDiv = document.getElementById('mapeamento');
+        const csvSugestaoDiv = document.getElementById('csvSugestao');
+
+        function log(message, type = 'info') {
+            console.log(message);
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            statusDiv.innerHTML += `<div class="${className}">${message}</div>`;
+        }
+
+        function analisarNode(node, depth = 0, parent = 'root') {
+            const indent = '  '.repeat(depth);
+            let html = `<div class="element" style="margin-left: ${depth * 20}px;">`;
+            html += `📦 <strong>${node.name || 'unnamed'}</strong> (${node.type})`;
+            if (node.children.length > 0) {
+                html += ` - ${node.children.length} filhos`;
+            }
+            html += `</div>`;
+            
+            node.children.forEach(child => {
+                html += analisarNode(child, depth + 1, node.name || 'unnamed');
+            });
+            
+            return html;
+        }
+
+        function extrairTodosElementos(node, elementos = new Set()) {
+            if (node.name && node.name.trim() !== '') {
+                elementos.add(node.name);
+            }
+            
+            node.children.forEach(child => {
+                extrairTodosElementos(child, elementos);
+            });
+            
+            return elementos;
+        }
+
+        function agruparElementos(elementos) {
+            const grupos = {};
+            
+            elementos.forEach(nome => {
+                // Procurar padrões como "1.1_", "2.2_", etc.
+                const match = nome.match(/^(\d+\.\d+)_/);
+                if (match) {
+                    const grupo = match[1];
+                    if (!grupos[grupo]) {
+                        grupos[grupo] = [];
+                    }
+                    grupos[grupo].push(nome);
+                } else {
+                    // Outros padrões
+                    const match2 = nome.match(/^(\d+)_/);
+                    if (match2) {
+                        const grupo = match2[1];
+                        if (!grupos[grupo]) {
+                            grupos[grupo] = [];
+                        }
+                        grupos[grupo].push(nome);
+                    } else {
+                        if (!grupos['outros']) {
+                            grupos['outros'] = [];
+                        }
+                        grupos['outros'].push(nome);
+                    }
+                }
+            });
+            
+            return grupos;
+        }
+
+        async function analisarGLB() {
+            try {
+                log('📂 Carregando arquivo 5d.glb...');
+                
+                const loader = new GLTFLoader();
+                const gltf = await new Promise((resolve, reject) => {
+                    loader.load('./5d.glb', resolve, 
+                        progress => {
+                            log(`Progresso: ${Math.round(progress.loaded / progress.total * 100)}%`);
+                        }, 
+                        reject
+                    );
+                });
+                
+                log('✅ Arquivo GLB carregado com sucesso!', 'success');
+                log(`📊 Scenes: ${gltf.scenes.length}, Animations: ${gltf.animations.length}`);
+                
+                if (gltf.scene) {
+                    // Analisar estrutura
+                    const estruturaHtml = analisarNode(gltf.scene);
+                    estruturaDiv.innerHTML = estruturaHtml;
+                    
+                    // Extrair elementos
+                    const todosElementos = extrairTodosElementos(gltf.scene);
+                    log(`📋 Total de elementos encontrados: ${todosElementos.size}`, 'success');
+                    
+                    const elementosArray = Array.from(todosElementos).sort();
+                    let elementosHtml = `<div><strong>Total: ${elementosArray.length} elementos</strong></div>`;
+                    elementosArray.forEach((elemento, index) => {
+                        elementosHtml += `<div class="element">${(index + 1).toString().padStart(3, '0')}: "${elemento}"</div>`;
+                    });
+                    elementosDiv.innerHTML = elementosHtml;
+                    
+                    // Agrupar elementos
+                    const grupos = agruparElementos(todosElementos);
+                    let mapeamentoHtml = '';
+                    
+                    Object.keys(grupos).sort().forEach(grupo => {
+                        mapeamentoHtml += `<div class="group">`;
+                        mapeamentoHtml += `<strong>Grupo "${grupo}" (${grupos[grupo].length} elementos):</strong><br>`;
+                        grupos[grupo].sort().forEach(elemento => {
+                            mapeamentoHtml += `<div class="element">• ${elemento}</div>`;
+                        });
+                        mapeamentoHtml += `</div>`;
+                    });
+                    mapeamentoDiv.innerHTML = mapeamentoHtml;
+                    
+                    // Gerar sugestão de CSV
+                    let csvSugestao = 'Sugestão de mapeamento para a planilha:\n\n';
+                    Object.keys(grupos).sort().forEach(grupo => {
+                        if (grupo !== 'outros') {
+                            const elementosString = grupos[grupo].sort().join(',');
+                            csvSugestao += `Item ${grupo}: ${elementosString}\n`;
+                        }
+                    });
+                    
+                    if (grupos['outros'] && grupos['outros'].length > 0) {
+                        csvSugestao += '\nElementos sem padrão identificado:\n';
+                        grupos['outros'].forEach(elemento => {
+                            csvSugestao += `• ${elemento}\n`;
+                        });
+                    }
+                    
+                    csvSugestaoDiv.textContent = csvSugestao;
+                    
+                } else {
+                    log('❌ Nenhuma scene encontrada no arquivo GLB', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Erro ao carregar GLB: ${error.message}`, 'error');
+                console.error('Erro completo:', error);
+            }
+        }
+
+        // Iniciar análise
+        analisarGLB();
+    </script>
+</body>
+</html>
