@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BarChart3, Layers, Menu, X, FolderKanban, HardHat, ChevronLeft, ChevronRight, Home } from 'lucide-react';
+import { BarChart3, Layers, Menu, X, FolderKanban, HardHat, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface NavigationProps {
   activeTab: string;

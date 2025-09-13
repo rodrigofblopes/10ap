@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { OrcamentoItem } from '../types/orcamento';
-import { Table, Eye, EyeOff, ChevronDown, ChevronRight, EyeIcon, EyeSlashIcon } from 'lucide-react';
+import { Table, Eye, EyeOff, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface PlanilhaSinteticaProps {
   itens: OrcamentoItem[];
@@ -285,14 +285,6 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
     );
   };
 
-  // Função para lidar com o clique no ícone de visibilidade (mantida para compatibilidade)
-  const handleVisibilityToggle = (e: React.MouseEvent, item: OrcamentoItem) => {
-    e.stopPropagation();
-    
-    if (onToggleVisibility) {
-      onToggleVisibility(item);
-    }
-  };
 
   // Função para lidar com o toggle de subcoleção individual (não utilizada atualmente)
   // const handleSubcollectionToggle = (e: React.MouseEvent, subcollectionName: string, parentItem: OrcamentoItem) => {
