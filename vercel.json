@@ -1,6 +1,25 @@
 {
   "version": 2,
+  "buildCommand": "cd _source/5D && npm run build",
+  "outputDirectory": "_source/5D/dist",
+  "installCommand": "cd _source/5D && npm install",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/((?!assets/|.*\\.csv|.*\\.glb|.*\\.wasm|.*\\.js|.*\\.css|.*\\.html).*)",
+      "destination": "/index.html"
+    }
+  ],
   "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
     {
       "source": "/(.*\\.csv)",
       "headers": [
@@ -10,15 +29,18 @@
         },
         {
           "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
+          "value": "no-cache, no-store, must-revalidate"
         }
       ]
-    }
-  ],
-  "rewrites": [
+    },
     {
-      "source": "/dashboards/arquitetura/(.*)",
-      "destination": "/dashboards/arquitetura/$1"
+      "source": "/(.*\\.glb)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "model/gltf-binary"
+        }
+      ]
     }
   ]
 }

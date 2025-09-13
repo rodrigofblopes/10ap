@@ -605,11 +605,13 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
                     subcategoria: '1.1',
                     unidade: 'm²',
                     quantidade: 1,
-                    precoUnitario: 0,
-                    precoTotal: 0,
+                    valorUnitario: 0,
+                    maoDeObra: 0,
+                    materiais: 0,
+                    total: 0,
+                    peso: 0,
                     elementos3D: '1.1 Paredes Térreo.001',
-                    isEtapaTotal: false,
-                    isSubcollection: true
+                    isEtapaTotal: false
                   };
                   console.log('🧪 Item de teste:', testItem);
                   onToggleVisibility(testItem);
@@ -630,11 +632,13 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
                     subcategoria: '1.1',
                     unidade: 'm²',
                     quantidade: 1,
-                    precoUnitario: 0,
-                    precoTotal: 0,
+                    valorUnitario: 0,
+                    maoDeObra: 0,
+                    materiais: 0,
+                    total: 0,
+                    peso: 0,
                     elementos3D: '1.1 Paredes Térreo.001, 1.1 Paredes Térreo.002, 1.1 Paredes Térreo.003',
-                    isEtapaTotal: false,
-                    isSubcollection: false
+                    isEtapaTotal: false
                   };
                   console.log('🧪 Item de teste:', testItem);
                   onToggleVisibility(testItem);
