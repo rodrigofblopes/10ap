@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "cd _source/5D && npm run build",
-  "outputDirectory": "_source/5D/dist",
-  "installCommand": "cd _source/5D && npm install",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
+  "installCommand": "npm install",
   "framework": "vite",
   "rewrites": [
     {

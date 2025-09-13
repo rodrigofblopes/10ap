@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico Modelo 3D - Estrutura Completa</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #ffd700, #ffeb3b);
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .section {
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .analysis {
+            background: #001122;
+            border-left: 4px solid #00aaff;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .warning { border-left-color: #ff6600; background: #220011; }
+        .error { border-left-color: #ff0000; background: #220000; }
+        .success { border-left-color: #00ff00; background: #002200; }
+        .info { border-left-color: #ffff00; background: #222200; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        .data { white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+        canvas { border: 2px solid #555; margin: 10px 0; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 DIAGNÓSTICO MODELO 3D - ANÁLISE COMPLETA</h1>
+        <p>Análise detalhada do arquivo 5d.glb para identificar problemas de visualização</p>
+    </div>
+
+    <div class="section">
+        <h2>📋 Controles de Análise</h2>
+        <button onclick="analisarModelo()">🔍 Analisar Modelo Completo</button>
+        <button onclick="testarVisibilidade()">👁️ Testar Visibilidade de Elementos</button>
+        <button onclick="analisarPosicionamento()">📐 Analisar Posicionamento</button>
+        <button onclick="verificarCamadas()">🗂️ Verificar Camadas/Coleções</button>
+        <button onclick="exportarEstrutura()">📊 Exportar Estrutura Completa</button>
+    </div>
+
+    <div id="resultados" class="section">
+        <h2>📊 Resultados da Análise</h2>
+        <div id="output">Clique em "Analisar Modelo Completo" para começar...</div>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Visualização 3D</h2>
+        <canvas id="canvas3d" width="800" height="400"></canvas>
+        <br>
+        <button onclick="resetarCamera()">📷 Resetar Câmera</button>
+        <button onclick="focarFundacao()">🏗️ Focar Fundação</button>
+        <button onclick="focarTerreo()">🏠 Focar Térreo</button>
+        <button onclick="focarSuperior()">🏢 Focar Superior</button>
+    </div>
+
+    <script>
+        let scene, camera, renderer, model;
+        let modeloCarregado = false;
+
+        // Inicializar Three.js
+        function inicializarVisualizacao() {
+            const canvas = document.getElementById('canvas3d');
+            
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x202020);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, canvas.width / canvas.height, 0.1, 1000);
+            camera.position.set(20, 20, 20);
+            camera.lookAt(0, 0, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+            renderer.setSize(800, 400);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // Luzes
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(50, 50, 50);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+
+            // Controls (básico)
+            canvas.addEventListener('wheel', (event) => {
+                const scale = event.deltaY > 0 ? 1.1 : 0.9;
+                camera.position.multiplyScalar(scale);
+                render();
+            });
+
+            render();
+        }
+
+        function render() {
+            renderer.render(scene, camera);
+        }
+
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const classes = {
+                'info': 'info',
+                'warning': 'warning', 
+                'error': 'error',
+                'success': 'success'
+            };
+            
+            output.innerHTML += `<div class="analysis ${classes[type]}">[${timestamp}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function analisarModelo() {
+            log('🔄 Iniciando análise do modelo 5d.glb...', 'info');
+            
+            try {
+                const loader = new THREE.GLTFLoader();
+                
+                loader.load('./5d.glb', 
+                    function(gltf) {
+                        log('✅ Modelo carregado com sucesso!', 'success');
+                        model = gltf.scene;
+                        scene.add(model);
+                        modeloCarregado = true;
+                        
+                        // Análise completa
+                        analisarEstrutura(model);
+                        analisarBoundingBox(model);
+                        analisarMateriais(model);
+                        analisarVisibilidadeGeral(model);
+                        
+                        render();
+                    },
+                    function(progress) {
+                        const percentual = (progress.loaded / progress.total * 100).toFixed(1);
+                        log(`📈 Progresso: ${percentual}%`, 'info');
+                    },
+                    function(error) {
+                        log(`❌ Erro ao carregar modelo: ${error}`, 'error');
+                    }
+                );
+                
+            } catch (error) {
+                log(`❌ Erro na análise: ${error}`, 'error');
+            }
+        }
+
+        function analisarEstrutura(modelo) {
+            log('🏗️ === ANÁLISE DE ESTRUTURA ===', 'info');
+            
+            let totalMeshes = 0;
+            let visibleMeshes = 0;
+            let elementosPorCategoria = {
+                'fundacao': 0,
+                'terreo': 0,
+                'superior': 0,
+                'outros': 0
+            };
+            
+            modelo.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    totalMeshes++;
+                    if (child.visible) visibleMeshes++;
+                    
+                    // Categorizar por nome
+                    const nome = child.name.toLowerCase();
+                    if (nome.includes('3.') || nome.includes('fundacao') || nome.includes('fund')) {
+                        elementosPorCategoria.fundacao++;
+                    } else if (nome.includes('1.') || nome.includes('4.') || nome.includes('terreo')) {
+                        elementosPorCategoria.terreo++;
+                    } else if (nome.includes('2.') || nome.includes('5.') || nome.includes('superior')) {
+                        elementosPorCategoria.superior++;
+                    } else {
+                        elementosPorCategoria.outros++;
+                    }
+                    
+                    // Log dos primeiros 20 elementos
+                    if (totalMeshes <= 20) {
+                        log(`📦 Mesh ${totalMeshes}: "${child.name}" - Visível: ${child.visible}`, 'info');
+                    }
+                }
+            });
+            
+            log(`📊 Total de Meshes: ${totalMeshes}`, 'success');
+            log(`👁️ Meshes Visíveis: ${visibleMeshes}`, visibleMeshes === totalMeshes ? 'success' : 'warning');
+            log(`🏗️ Fundação: ${elementosPorCategoria.fundacao} elementos`, 'info');
+            log(`🏠 Térreo: ${elementosPorCategoria.terreo} elementos`, 'info');
+            log(`🏢 Superior: ${elementosPorCategoria.superior} elementos`, 'info');
+            log(`❓ Outros: ${elementosPorCategoria.outros} elementos`, 'info');
+            
+            // Verificar se só tem fundação visível
+            if (elementosPorCategoria.fundacao > 0 && 
+                elementosPorCategoria.terreo === 0 && 
+                elementosPorCategoria.superior === 0) {
+                log('⚠️ PROBLEMA DETECTADO: Apenas elementos de fundação encontrados!', 'warning');
+                log('💡 Possíveis causas: Modelo incompleto, elementos ocultos, ou problema de escala', 'warning');
+            }
+        }
+
+        function analisarBoundingBox(modelo) {
+            log('📐 === ANÁLISE DE DIMENSÕES ===', 'info');
+            
+            const box = new THREE.Box3().setFromObject(modelo);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
+            
+            log(`📏 Dimensões: ${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}`, 'info');
+            log(`🎯 Centro: (${center.x.toFixed(2)}, ${center.y.toFixed(2)}, ${center.z.toFixed(2)})`, 'info');
+            
+            // Verificar se o modelo está muito pequeno ou muito grande
+            const maxDimension = Math.max(size.x, size.y, size.z);
+            if (maxDimension < 1) {
+                log('⚠️ PROBLEMA: Modelo muito pequeno (< 1 unidade)', 'warning');
+                log('💡 Solução: Aumentar escala ou ajustar câmera', 'warning');
+            } else if (maxDimension > 1000) {
+                log('⚠️ PROBLEMA: Modelo muito grande (> 1000 unidades)', 'warning');
+                log('💡 Solução: Reduzir escala ou ajustar câmera', 'warning');
+            } else {
+                log('✅ Dimensões adequadas para visualização', 'success');
+            }
+        }
+
+        function analisarMateriais(modelo) {
+            log('🎨 === ANÁLISE DE MATERIAIS ===', 'info');
+            
+            const materiais = new Set();
+            modelo.traverse((child) => {
+                if (child instanceof THREE.Mesh && child.material) {
+                    materiais.add(child.material.type);
+                }
+            });
+            
+            log(`🎨 Tipos de materiais encontrados: ${Array.from(materiais).join(', ')}`, 'info');
+        }
+
+        function analisarVisibilidadeGeral(modelo) {
+            log('👁️ === ANÁLISE DE VISIBILIDADE ===', 'info');
+            
+            let elementosOcultos = [];
+            modelo.traverse((child) => {
+                if (child instanceof THREE.Mesh && !child.visible) {
+                    elementosOcultos.push(child.name);
+                }
+            });
+            
+            if (elementosOcultos.length > 0) {
+                log(`⚠️ ${elementosOcultos.length} elementos estão ocultos:`, 'warning');
+                elementosOcultos.slice(0, 10).forEach(nome => {
+                    log(`   - ${nome}`, 'warning');
+                });
+                if (elementosOcultos.length > 10) {
+                    log(`   ... e mais ${elementosOcultos.length - 10} elementos`, 'warning');
+                }
+            } else {
+                log('✅ Todos os elementos estão visíveis', 'success');
+            }
+        }
+
+        function testarVisibilidade() {
+            if (!modeloCarregado) {
+                log('❌ Modelo não carregado. Execute "Analisar Modelo" primeiro.', 'error');
+                return;
+            }
+            
+            log('🔄 Testando visibilidade de todas as categorias...', 'info');
+            
+            // Tornar todos visíveis primeiro
+            model.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    child.visible = true;
+                }
+            });
+            
+            log('✅ Todos os elementos tornados visíveis', 'success');
+            render();
+        }
+
+        function resetarCamera() {
+            camera.position.set(20, 20, 20);
+            camera.lookAt(0, 0, 0);
+            render();
+        }
+
+        function focarFundacao() {
+            camera.position.set(20, 5, 20);
+            camera.lookAt(0, -5, 0);
+            render();
+        }
+
+        function focarTerreo() {
+            camera.position.set(20, 10, 20);
+            camera.lookAt(0, 5, 0);
+            render();
+        }
+
+        function focarSuperior() {
+            camera.position.set(20, 20, 20);
+            camera.lookAt(0, 15, 0);
+            render();
+        }
+
+        function exportarEstrutura() {
+            if (!modeloCarregado) {
+                log('❌ Modelo não carregado. Execute "Analisar Modelo" primeiro.', 'error');
+                return;
+            }
+            
+            let estrutura = {
+                elementos: [],
+                estatisticas: {
+                    totalMeshes: 0,
+                    visibleMeshes: 0,
+                    categorias: {}
+                }
+            };
+            
+            model.traverse((child) => {
+                if (child instanceof THREE.Mesh) {
+                    estrutura.elementos.push({
+                        nome: child.name,
+                        visivel: child.visible,
+                        posicao: {
+                            x: child.position.x,
+                            y: child.position.y,
+                            z: child.position.z
+                        },
+                        tipo: child.material?.type || 'unknown'
+                    });
+                    estrutura.estatisticas.totalMeshes++;
+                    if (child.visible) estrutura.estatisticas.visibleMeshes++;
+                }
+            });
+            
+            // Download como JSON
+            const dataStr = JSON.stringify(estrutura, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'estrutura-modelo-3d.json';
+            link.click();
+            
+            log('✅ Estrutura exportada como JSON', 'success');
+        }
+
+        // Inicializar ao carregar a página
+        window.onload = function() {
+            inicializarVisualizacao();
+            log('🚀 Diagnóstico inicializado. Pronto para análise!', 'success');
+        };
+    </script>
+</body>
+</html>
