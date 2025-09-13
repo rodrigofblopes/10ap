@@ -1,8 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "cd _source/5D && npm ci && npm run build",
-  "outputDirectory": "_source/5D/dist",
-  "framework": "vite",
+  "outputDirectory": ".",
   "rewrites": [
     {
       "source": "/((?!assets/|.*\\.csv|.*\\.glb|.*\\.wasm|.*\\.js|.*\\.css|.*\\.html).*)",
