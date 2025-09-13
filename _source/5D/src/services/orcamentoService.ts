@@ -443,6 +443,11 @@ export const processarDadosCSV5DARQ = (csvContent: string): OrcamentoItem[] => {
           categoria: item?.startsWith('3.') ? 'EST-Fundação' : item?.startsWith('4.') ? 'EST-Térreo' : item?.startsWith('5.') ? 'EST-Superior' : 'ARQ'
         });
       }
+      
+      // Log específico para itens estruturais
+      if (item?.startsWith('3.') || item?.startsWith('4.') || item?.startsWith('5.')) {
+        console.log(`🏗️ ITEM ESTRUTURAL DETECTADO: ${item} - ${descricao} - Total: ${totalFinal} - Condição: ${item && descricao && (quantidade > 0 || totalFinal > 0 || isEtapaTotal)}`);
+      }
 
       if (item && descricao && (quantidade > 0 || totalFinal > 0 || isEtapaTotal)) {
         // Para totais das etapas principais, calcular M.O. e MAT. baseado nos subitens
