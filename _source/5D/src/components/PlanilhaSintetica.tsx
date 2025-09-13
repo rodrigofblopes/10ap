@@ -59,6 +59,7 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
   const handleItemClick = (item: OrcamentoItem) => {
     console.log('🖱️ ===== ITEM CLICADO NA PLANILHA =====');
     console.log('📋 Item clicado:', { id: item.id, descricao: item.descricao, isEtapaTotal: item.isEtapaTotal });
+    console.log('📋 Item completo:', item);
     
     // Se é uma categoria principal, toggle colapso/expansão
     if (item.isEtapaTotal) {
@@ -241,27 +242,27 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
     }
   };
 
-  // Função para lidar com o toggle de subcoleção individual
-  const handleSubcollectionToggle = (e: React.MouseEvent, subcollectionName: string, parentItem: OrcamentoItem) => {
-    e.stopPropagation();
-    
-    console.log('🔸 Toggle de subcoleção individual:', subcollectionName);
-    console.log('🔸 Item pai:', parentItem);
-    
-    // Criar um item fictício apenas para esta subcoleção
-    const fakeItem = {
-      ...parentItem,
-      id: `${parentItem.id}_sub_${subcollectionName}`, // ID único para debug
-      elementos3D: subcollectionName, // Apenas esta subcoleção
-      isSubcollection: true // Marcar como subcoleção para debug
-    };
-    
-    console.log('🔸 Item fictício criado:', fakeItem);
-    
-    if (onToggleVisibility) {
-      onToggleVisibility(fakeItem);
-    }
-  };
+  // Função para lidar com o toggle de subcoleção individual (não utilizada atualmente)
+  // const handleSubcollectionToggle = (e: React.MouseEvent, subcollectionName: string, parentItem: OrcamentoItem) => {
+  //   e.stopPropagation();
+  //   
+  //   console.log('🔸 Toggle de subcoleção individual:', subcollectionName);
+  //   console.log('🔸 Item pai:', parentItem);
+  //   
+  //   // Criar um item fictício apenas para esta subcoleção
+  //   const fakeItem = {
+  //     ...parentItem,
+  //     id: `${parentItem.id}_sub_${subcollectionName}`, // ID único para debug
+  //     elementos3D: subcollectionName, // Apenas esta subcoleção
+  //     isSubcollection: true // Marcar como subcoleção para debug
+  //   };
+  //   
+  //   console.log('🔸 Item fictício criado:', fakeItem);
+  //   
+  //   if (onToggleVisibility) {
+  //     onToggleVisibility(fakeItem);
+  //   }
+  // };
 
   if (itens.length === 0) {
     return (
@@ -363,7 +364,11 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
                 return (
                   <div
                     key={subcategoria.id}
-                    onClick={() => handleItemClick(subcategoria)}
+                    onClick={(e) => {
+                      console.log('🖱️ CLIQUE DETECTADO na subcategoria:', subcategoria.id);
+                      e.stopPropagation();
+                      handleItemClick(subcategoria);
+                    }}
                     className={`p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
                       isSelected
                         ? 'bg-orange-100 border-orange-400 shadow-lg ring-2 ring-orange-200'
@@ -491,7 +496,7 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
                                 console.log('👁️ Toggle visibilidade para:', subcategoria.id);
                                 onToggleVisibility(subcategoria);
                               }}
-                              className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                              className={`p-2 rounded-lg transition-all duration-200 ${
                                 hasHiddenElements(subcategoria)
                                   ? 'bg-red-100 text-red-700 hover:bg-red-200 border border-red-300'
                                   : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-300'
@@ -499,15 +504,9 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
                               title={hasHiddenElements(subcategoria) ? 'Mostrar elementos' : 'Ocultar elementos'}
                             >
                               {hasHiddenElements(subcategoria) ? (
-                                <>
-                                  <Eye className="h-4 w-4" />
-                                  Mostrar Elementos 3D
-                                </>
+                                <Eye className="h-4 w-4" />
                               ) : (
-                                <>
-                                  <EyeOff className="h-4 w-4" />
-                                  Ocultar Elementos 3D
-                                </>
+                                <EyeOff className="h-4 w-4" />
                               )}
                             </button>
                           </div>

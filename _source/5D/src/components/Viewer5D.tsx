@@ -31,11 +31,20 @@ interface StructuralModelProps {
 function StructuralModel({ highlightedElements, hiddenElements, onElementsExtracted, onElementClick }: StructuralModelProps) {
   const meshRef = useRef<THREE.Group>(null);
 
+  // Debug: Verificar props recebidas
+  console.log('🎯 StructuralModel - Props recebidas:', {
+    highlightedElements: highlightedElements.length,
+    hiddenElements: hiddenElements.size,
+    onElementsExtracted: !!onElementsExtracted,
+    onElementClick: !!onElementClick
+  });
+
   // Carregar o modelo GLB
   const { scene } = useGLTF('/5d.glb');
   
   // Debug: Verificar se o modelo está carregado
   console.log('🎯 StructuralModel - Scene carregada:', !!scene);
+  console.log('🎯 StructuralModel - onElementsExtracted disponível:', !!onElementsExtracted);
   if (scene) {
     console.log('🎯 StructuralModel - Scene name:', scene.name);
     console.log('🎯 StructuralModel - Scene children count:', scene.children.length);
@@ -1754,161 +1763,219 @@ function usePlanilha3DLink(itens5D: any[]) {
 
   // Funções removidas - agora usamos hierarquia do GLB diretamente
 
-  // Função para lincar Elementos3D da planilha com coleções do Blender
+  // Função para lincar Elementos3D da planilha com coleções do Blender - VERSÃO INTELIGENTE
   const findMatchingElements = useCallback((item: any): string[] => {
     const itemId = item.id;
     const itemCodigo = item.codigo;
     const itemDescricao = item.descricao || '';
     const elementos3D = item.elementos3D || '';
     
-    console.log('🔍 ===== LINCAGEM PLANILHA ↔ SCENE COLLECTIONS =====');
+    console.log('🔍 ===== LÓGICA DE LINCAGEM INTELIGENTE =====');
     console.log('📋 Item:', { id: itemId, codigo: itemCodigo, descricao: itemDescricao, elementos3D });
     console.log('📦 Total de elementos GLB disponíveis:', glbElements.length);
     
-    // Debug específico para subcoleções
-    if (item.isSubcollection) {
-      console.log('🔸 SUBCOLEÇÃO INDIVIDUAL detectada via flag');
-    }
-    
     let matchingElements: string[] = [];
     
-    // ESTRATÉGIA PRINCIPAL: Mapear elementos da planilha para scene collections do Blender
+    // Mapeamento inteligente baseado no código do item
+    const codigoItem = itemId || itemCodigo;
+    console.log('🎯 Código do item:', codigoItem);
+
+    // Estratégia 1: Mapeamento direto por código
+    if (codigoItem) {
+      // Converter código para formato GLB (ex: "1.1" -> "11")
+      const codigoNumerico = codigoItem.replace('.', '');
+      console.log('🔢 Código numérico:', codigoNumerico);
+
+      // Buscar elementos que começam com o código numérico
+      const elementosPorCodigo = glbElements.filter(el => {
+        return el.startsWith(codigoNumerico + '_');
+      });
+
+      if (elementosPorCodigo.length > 0) {
+        console.log(`✅ Encontrados ${elementosPorCodigo.length} elementos para código ${codigoItem}:`, elementosPorCodigo);
+        matchingElements = elementosPorCodigo;
+        return matchingElements;
+      }
+
+      // Estratégia 2: Busca por padrões específicos baseados na descrição
+      const descricaoLower = itemDescricao.toLowerCase();
+      console.log('📝 Descrição:', descricaoLower);
+
+      if (descricaoLower.includes('paredes')) {
+        // Para paredes, buscar elementos que contenham "paredes" ou "wall" E que correspondam ao código
+        const elementosParedes = glbElements.filter(el => {
+          const elLower = el.toLowerCase();
+          const hasParedesKeyword = elLower.includes('paredes') || elLower.includes('wall') || elLower.includes('parede');
+          
+          // Filtrar por código específico se disponível
+          if (codigoItem) {
+            const codigoNumerico = codigoItem.replace('.', '');
+            return hasParedesKeyword && el.startsWith(codigoNumerico + '_');
+          }
+          
+          return hasParedesKeyword;
+        });
+        
+        if (elementosParedes.length > 0) {
+          console.log('✅ Elementos de paredes encontrados:', elementosParedes);
+          matchingElements = elementosParedes;
+          return matchingElements;
+        }
+      }
+
+      if (descricaoLower.includes('piso')) {
+        // Para piso, buscar elementos que contenham "piso" ou "floor" E que correspondam ao código
+        const elementosPiso = glbElements.filter(el => {
+          const elLower = el.toLowerCase();
+          const hasPisoKeyword = elLower.includes('piso') || elLower.includes('floor') || elLower.includes('laje');
+          
+          // Filtrar por código específico se disponível
+          if (codigoItem) {
+            const codigoNumerico = codigoItem.replace('.', '');
+            return hasPisoKeyword && el.startsWith(codigoNumerico + '_');
+          }
+          
+          return hasPisoKeyword;
+        });
+        
+        if (elementosPiso.length > 0) {
+          console.log('✅ Elementos de piso encontrados:', elementosPiso);
+          matchingElements = elementosPiso;
+          return matchingElements;
+        }
+      }
+
+      if (descricaoLower.includes('esquadrias')) {
+        // Para esquadrias, buscar elementos que contenham "esquadrias" ou "door" ou "window" E que correspondam ao código
+        const elementosEsquadrias = glbElements.filter(el => {
+          const elLower = el.toLowerCase();
+          const hasEsquadriasKeyword = elLower.includes('esquadrias') || elLower.includes('door') || elLower.includes('window') || elLower.includes('porta') || elLower.includes('janela');
+          
+          // Filtrar por código específico se disponível
+          if (codigoItem) {
+            const codigoNumerico = codigoItem.replace('.', '');
+            return hasEsquadriasKeyword && el.startsWith(codigoNumerico + '_');
+          }
+          
+          return hasEsquadriasKeyword;
+        });
+        
+        if (elementosEsquadrias.length > 0) {
+          console.log('✅ Elementos de esquadrias encontrados:', elementosEsquadrias);
+          matchingElements = elementosEsquadrias;
+          return matchingElements;
+        }
+      }
+
+      if (descricaoLower.includes('telhado')) {
+        // Para telhado, buscar elementos que contenham "telhado" ou "roof" E que correspondam ao código
+        const elementosTelhado = glbElements.filter(el => {
+          const elLower = el.toLowerCase();
+          const hasTelhadoKeyword = elLower.includes('telhado') || elLower.includes('roof') || elLower.includes('telha');
+          
+          // Filtrar por código específico se disponível
+          if (codigoItem) {
+            const codigoNumerico = codigoItem.replace('.', '');
+            return hasTelhadoKeyword && el.startsWith(codigoNumerico + '_');
+          }
+          
+          return hasTelhadoKeyword;
+        });
+        
+        if (elementosTelhado.length > 0) {
+          console.log('✅ Elementos de telhado encontrados:', elementosTelhado);
+          matchingElements = elementosTelhado;
+          return matchingElements;
+        }
+      }
+
+      if (descricaoLower.includes('vigas')) {
+        // Para vigas, buscar elementos que contenham "vigas" ou "beam"
+        const elementosVigas = glbElements.filter(el => {
+          const elLower = el.toLowerCase();
+          return elLower.includes('vigas') || elLower.includes('beam') || elLower.includes('viga');
+        });
+        
+        if (elementosVigas.length > 0) {
+          console.log('✅ Elementos de vigas encontrados:', elementosVigas);
+          matchingElements = elementosVigas;
+          return matchingElements;
+        }
+      }
+
+      if (descricaoLower.includes('pilares')) {
+        // Para pilares, buscar elementos que contenham "pilares" ou "column"
+        const elementosPilares = glbElements.filter(el => {
+          const elLower = el.toLowerCase();
+          return elLower.includes('pilares') || elLower.includes('column') || elLower.includes('pilar');
+        });
+        
+        if (elementosPilares.length > 0) {
+          console.log('✅ Elementos de pilares encontrados:', elementosPilares);
+          matchingElements = elementosPilares;
+          return matchingElements;
+        }
+      }
+
+      if (descricaoLower.includes('fundações')) {
+        // Para fundações, buscar elementos que contenham "fundações" ou "foundation"
+        const elementosFundacoes = glbElements.filter(el => {
+          const elLower = el.toLowerCase();
+          return elLower.includes('fundações') || elLower.includes('foundation') || elLower.includes('fundacao');
+        });
+        
+        if (elementosFundacoes.length > 0) {
+          console.log('✅ Elementos de fundações encontrados:', elementosFundacoes);
+          matchingElements = elementosFundacoes;
+          return matchingElements;
+        }
+      }
+    }
+
+    // Estratégia 3: Se ainda não encontrou, tentar mapear pelos elementos3D da planilha
     if (elementos3D && elementos3D.trim() !== '') {
-      console.log('🎯 ===== MAPEAMENTO: PLANILHA → SCENE COLLECTIONS =====');
-      console.log('📋 Elementos3D da planilha:', `"${elementos3D}"`);
+      console.log('🎯 Tentando mapear pelos elementos3D da planilha:', elementos3D);
       
-      // NOVA ESTRATÉGIA: Verificar se é uma subcoleção individual
-      if (elementos3D.includes('.')) {
-        // É uma subcoleção individual como "1.1 Paredes Térreo.001"
-        console.log('🔸 SUBCOLEÇÃO INDIVIDUAL detectada:', elementos3D);
-        console.log('🔸 Total de elementos GLB disponíveis:', glbElements.length);
-        console.log('🔸 Primeiros 10 elementos GLB:', glbElements.slice(0, 10));
-        
-        // Tentar mapear diretamente
-        const elementoExato = glbElements.find(el => el === elementos3D);
+      // Dividir elementos3D por vírgula
+      const elementosLista = elementos3D.split(',').map((el: string) => el.trim()).filter((el: string) => el !== '');
+      console.log('📋 Lista de elementos da planilha:', elementosLista);
+
+      for (const elemento of elementosLista) {
+        // Tentar encontrar elemento exato
+        const elementoExato = glbElements.find(el => el === elemento);
         if (elementoExato) {
-          console.log('✅ Mapeamento exato encontrado:', elementoExato);
-          return [elementoExato];
-        } else {
-          console.log('❌ Mapeamento exato não encontrado para:', elementos3D);
+          console.log('✅ Elemento exato encontrado:', elementoExato);
+          matchingElements.push(elementoExato);
+          continue;
         }
-        
-        // Tentar mapear extraindo partes
-        const partes = elementos3D.split('.');
+
+        // Tentar encontrar por partes do nome
+        const partes = elemento.split('.');
         if (partes.length >= 2) {
-          const prefixo = partes[0]; // "1.1 Paredes Térreo"
-          const numeroFinal = partes[partes.length - 1]; // "001"
+          const prefixo = partes[0];
+          const sufixo = partes[partes.length - 1];
           
-          // Buscar por padrões: 11_.001, 1.1_.001, etc.
-          const padroesBusca = [
-            `${prefixo.replace(/\s.*/, '').replace('.', '')}_\.${numeroFinal}`, // 11_.001
-            `${prefixo.replace(/\s.*/, '').replace('.', '')}_\.0${numeroFinal}`, // 11_.0001 
-            `${prefixo.replace(/\s.*/, '')}_.${numeroFinal}`, // 1.1_.001
-            `${prefixo.replace(/\s.*/, '')}_.0${numeroFinal}`, // 1.1_.0001
-          ];
+          // Converter para formato GLB
+          const codigoNumerico = prefixo.replace(/\s.*/, '').replace('.', '');
+          const descricao = prefixo.replace(/^\d+\.\d+\s*/, '').replace(/\s+/g, '_');
+          const nomeEsperado = `${codigoNumerico}_${descricao}${sufixo}`;
           
-          console.log('🔍 Padrões de busca para subcoleção:', padroesBusca);
-          
-          for (const padrao of padroesBusca) {
-            const elementosEncontrados = glbElements.filter(el => 
-              el.includes(padrao) || el.match(new RegExp(padrao.replace('.', '\\.')))
-            );
-            if (elementosEncontrados.length > 0) {
-              console.log(`✅ Encontrados elementos com padrão "${padrao}":`, elementosEncontrados);
-              matchingElements = elementosEncontrados;
-              break;
-            }
+          const elementoEncontrado = glbElements.find(el => el === nomeEsperado);
+          if (elementoEncontrado) {
+            console.log('✅ Elemento encontrado por conversão:', elementoEncontrado);
+            matchingElements.push(elementoEncontrado);
           }
-          
-          // Se não encontrou, tentar busca mais flexível
-          if (matchingElements.length === 0) {
-            const codigo = prefixo.replace(/\s.*/, '').replace('.', ''); // "11"
-            const elementosComCodigo = glbElements.filter(el => {
-              return el.startsWith(codigo + '_') && el.includes(numeroFinal);
-            });
-            
-            if (elementosComCodigo.length > 0) {
-              console.log(`✅ Busca flexível encontrou:`, elementosComCodigo);
-              matchingElements = elementosComCodigo;
-            }
-          }
-        }
-      } else {
-        // É uma coleção completa, usar estratégia original
-        console.log('🔸 COLEÇÃO COMPLETA detectada');
-        
-        // ESTRATÉGIA 1: Extrair código do item (ex: "1.1 Paredes Térreo" → "1.1")
-        const codigoItem = itemId || itemCodigo;
-        console.log(`🔍 Código do item extraído: "${codigoItem}"`);
-        
-        // ESTRATÉGIA 2: Buscar elementos GLB que começam com o código do item
-        const elementosPorCodigo = glbElements.filter(elemento => {
-          const elementoLower = elemento.toLowerCase();
-          const codigoLower = codigoItem.toLowerCase();
-          
-          // Buscar elementos que começam com o código (ex: "1.1" encontra "1.1_001", "1.1_002")
-          return elementoLower.startsWith(codigoLower.replace('.', '') + '_') ||
-                 elementoLower.startsWith(codigoLower + '_') ||
-                 elementoLower === codigoLower.replace('.', '') ||
-                 elementoLower === codigoLower;
-        });
-        
-        if (elementosPorCodigo.length > 0) {
-          console.log(`✅ Encontrados ${elementosPorCodigo.length} elementos para código "${codigoItem}":`, elementosPorCodigo);
-          matchingElements = elementosPorCodigo;
-        } else {
-          // ESTRATÉGIA 3: Busca por palavras-chave da descrição
-          const palavrasChave = itemDescricao.toLowerCase().split(' ').filter((p: string) => p.length > 3);
-          console.log(`🔍 Buscando por palavras-chave da descrição:`, palavrasChave);
-          
-          for (const palavra of palavrasChave) {
-            const elementosPorPalavra = glbElements.filter(elemento =>
-              elemento.toLowerCase().includes(palavra)
-            );
-            if (elementosPorPalavra.length > 0) {
-              console.log(`✅ Encontrados ${elementosPorPalavra.length} elementos para palavra "${palavra}":`, elementosPorPalavra);
-              matchingElements = [...matchingElements, ...elementosPorPalavra];
-            }
-          }
-          
-          // Remover duplicatas
-          matchingElements = [...new Set(matchingElements)];
-        }
-      }
-    } else {
-      console.log('❌ Item não possui coluna Elementos3D preenchida');
-      console.log('💡 Tentando mapear pelo código do item...');
-      
-      // ESTRATÉGIA FALLBACK: Mapear pelo código do item mesmo sem Elementos3D
-      const codigoItem = itemId || itemCodigo;
-      if (codigoItem) {
-        const elementosPorCodigo = glbElements.filter(elemento => {
-          const elementoLower = elemento.toLowerCase();
-          const codigoLower = codigoItem.toLowerCase();
-          
-          return elementoLower.startsWith(codigoLower.replace('.', '') + '_') ||
-                 elementoLower.startsWith(codigoLower + '_') ||
-                 elementoLower === codigoLower.replace('.', '') ||
-                 elementoLower === codigoLower;
-        });
-        
-        if (elementosPorCodigo.length > 0) {
-          console.log(`✅ FALLBACK: Encontrados ${elementosPorCodigo.length} elementos para código "${codigoItem}":`, elementosPorCodigo);
-          matchingElements = elementosPorCodigo;
         }
       }
     }
-    
-    if (matchingElements.length === 0) {
-      console.log('❌ Nenhum elemento encontrado');
-      console.log('🔍 Debug - Primeiros 10 elementos GLB:', glbElements.slice(0, 10));
-      console.log('🔍 Debug - Item completo:', item);
-      console.log('🔍 Debug - É subcategoria?', !item.isEtapaTotal);
-      console.log('🔍 Debug - É subcoleção?', item.isSubcollection);
-    }
-    
-    console.log(`🎯 Total de elementos encontrados: ${matchingElements.length}`);
+
+    if (matchingElements.length > 0) {
+      console.log(`✅ Total de elementos encontrados: ${matchingElements.length}`);
     return matchingElements;
+    }
+
+    console.log('❌ Nenhum elemento encontrado para este item');
+    return [];
   }, [glbElements]);
 
   return {

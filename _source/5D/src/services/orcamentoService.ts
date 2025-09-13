@@ -6,21 +6,39 @@ import { dadosOrcamento } from '../data/orcamentoData';
 const dadosCompletosCSV = `Planilha Orçamentária Sintética Com Valor do Material e da Mão de Obra;;;;;;;;
 Item;Descrição;Und;Quant.;Total;;;Peso (%);Elementos3D
 ;;;;M. O.;MAT.;Total;;
-1;PAVIMENTO TÉRREO;;;67.392,92;132.731,35;200.124,27;47,16%;
- 1.1 ;PAREDES;m²;384,06;33.689,73;37.357,52;71.047,25;16,74%;1.1_.001,1.1_.002,1.1_.003,1.1_.004,1.1_.005,1.1_.006,1.1_.007,1.1_.008,1.1_.009,1.1_.010,1.1_.011,1.1_.012,1.1_.013,1.1_.014,1.1_.015,1.1_.016,1.1_.017,1.1_.018,1.1_.019,1.1_.020,1.1_.021,1.1_.022,1.1_.023,
- 1.2 ;PISO;m²;134,52;4.241,41;36.036,56;40.277,97;9,49%;1.2_.001,1.2_.002,1.2_.003,1.2_.004,1.2_.005,1.2_.006,1.2_.007,1.2_.008,1.2_.009,1.2_.010,1.2_.011,1.2_.012,1.2_.013,1.2_.014,1.2_.015,1.2_.016,1.2_.017,1.2_.018,1.2_.019
- 1.3 ;REVESTIMENTO PAREDES;m²;768,12;21.441,68;35.382,07;56.823,75;13,39%;
- 1.4 ;FORRO;m²;134,52;5.474,95;5.633,70;11.108,65;2,62%;
- 1.5 ;ESQUADRIAS;unid;30;2.545,15;18.321,50;20.866,65;4,92%;
-2;PAVIMENTO SUPERIOR;;;75.036,27;149.217,16;224.253,43;52,84%;
- 2.1 ;PAREDES;m²;423,58;37.156,42;41.201,63;78.358,05;18,46%;2.1_.001,2.1_.002,2.1_.003,2.1_.004,2.1_.005,2.1_.006,2.1_.007,2.1_.008,2.1_.009,2.1_.010,2.1_.011,2.1_.012,2.1_.013,2.1_.014,2.1_.015,2.1_.016,2.1_.017,2.1_.018,2.1_.019,2.1_.020,2.1_.021,2.1_.022,2.1_.023
- 2.2 ;PISO;m²;134,52;4.241,41;36.036,56;40.277,97;9,49%;2.2_,2.2_.001,2.2_.002,2.2_.003,2.2_.004,2.2_.005,2.2_.006,2.2_.007,2.2_.008,2.2_.009,2.2_.010,2.2_.011,2.2_.012,2.2_.013,2.2_.014,2.2_.015,2.2_.016,2.2_.017,2.2_.018,2.2_.019,
- 2.3 ;REVESTIMENTO PAREDES;m²;847,16;23.265,93;38.283,62;61.549,55;14,50%;
- 2.4 ;FORRO;m²;134,52;5.474,95;5.633,70;11.108,65;2,62%;
- 2.5 ;ESQUADRIAS;unid;30;2.545,15;18.321,50;20.866,65;4,92%;
- 2.6 ;TELHADO;m²;171,21;2.352,41;9.740,15;12.092,56;2,85%;2.6_
-;;;;142.429,19;281.948,51;424.377,70;;
-;;;;424.377,70;;;`;
+1;PAVIMENTO TÉRREO - ARQ;;;67.392,92;132.731,35;200.124,27;36,27%;
+ 1.1 ;PAREDES;m²;384,06;33.689,73;37.357,52;71.047,25;12,88%;1.1 Paredes Térreo.001, 1.1 Paredes Térreo.002, 1.1 Paredes Térreo.003, 1.1 Paredes Térreo.004, 1.1 Paredes Térreo.005, 1.1 Paredes Térreo.006, 1.1 Paredes Térreo.007, 1.1 Paredes Térreo.008, 1.1 Paredes Térreo.009, 1.1 Paredes Térreo.010, 1.1 Paredes Térreo.011, 1.1 Paredes Térreo.012, 1.1 Paredes Térreo.013, 1.1 Paredes Térreo.014, 1.1 Paredes Térreo.015, 1.1 Paredes Térreo.016, 1.1 Paredes Térreo.017, 1.1 Paredes Térreo.018, 1.1 Paredes Térreo.019, 1.1 Paredes Térreo.020, 1.1 Paredes Térreo.021, 1.1 Paredes Térreo.022, 1.1 Paredes Térreo.023, 1.1 Paredes Térreo.024
+ 1.2 ;PISO;m²;134,52;4.241,41;36.036,56;40.277,97;7,30%;1.2 Piso Térreo.001, 1.2 Piso Térreo.002, 1.2 Piso Térreo.003, 1.2 Piso Térreo.004, 1.2 Piso Térreo.005, 1.2 Piso Térreo.006, 1.2 Piso Térreo.007, 1.2 Piso Térreo.008, 1.2 Piso Térreo.009, 1.2 Piso Térreo.010, 1.2 Piso Térreo.011, 1.2 Piso Térreo.012, 1.2 Piso Térreo.013, 1.2 Piso Térreo.014, 1.2 Piso Térreo.015, 1.2 Piso Térreo.016, 1.2 Piso Térreo.017, 1.2 Piso Térreo.018, 1.2 Piso Térreo.019, 1.2 Piso Térreo.020
+ 1.3 ;REVESTIMENTO PAREDES;m²;768,12;21.441,68;35.382,07;56.823,75;10,30%;
+ 1.4 ;FORRO;m²;134,52;5.474,95;5.633,70;11.108,65;2,01%;
+ 1.5 ;ESQUADRIAS;UM;30;2.545,15;18.321,50;20.866,65;3,78%;1.5 Esquadrias Térreo.001, 1.5 Esquadrias Térreo.002, 1.5 Esquadrias Térreo.003, 1.5 Esquadrias Térreo.004, 1.5 Esquadrias Térreo.005, 1.5 Esquadrias Térreo.006, 1.5 Esquadrias Térreo.007, 1.5 Esquadrias Térreo.008, 1.5 Esquadrias Térreo.009
+2;PAVIMENTO SUPERIOR - ARQ;;;75.036,27;149.217,16;224.253,43;40,65%;
+ 2.1 ;PAREDES;m²;423,58;37.156,42;41.201,63;78.358,05;14,20%;2.1 Paredes Pav. Superior.001, 2.1 Paredes Pav. Superior.002, 2.1 Paredes Pav. Superior.003, 2.1 Paredes Pav. Superior.004, 2.1 Paredes Pav. Superior.005, 2.1 Paredes Pav. Superior.006, 2.1 Paredes Pav. Superior.007, 2.1 Paredes Pav. Superior.008, 2.1 Paredes Pav. Superior.009, 2.1 Paredes Pav. Superior.010, 2.1 Paredes Pav. Superior.011, 2.1 Paredes Pav. Superior.012, 2.1 Paredes Pav. Superior.013, 2.1 Paredes Pav. Superior.014, 2.1 Paredes Pav. Superior.015, 2.1 Paredes Pav. Superior.016, 2.1 Paredes Pav. Superior.017, 2.1 Paredes Pav. Superior.018, 2.1 Paredes Pav. Superior.019, 2.1 Paredes Pav. Superior.020, 2.1 Paredes Pav. Superior.021, 2.1 Paredes Pav. Superior.022, 2.1 Paredes Pav. Superior.023, 2.1 Paredes Pav. Superior.024, 2.1 Paredes Pav. Superior.025, 2.1 Paredes Pav. Superior.026, 2.1 Paredes Pav. Superior.027, 2.1 Paredes Pav. Superior.028, 2.1 Paredes Pav. Superior.029, 2.1 Paredes Pav. Superior.030, 2.1 Paredes Pav. Superior.031, 2.1 Paredes Pav. Superior.032, 2.1 Paredes Pav. Superior.033, 2.1 Paredes Pav. Superior.034, 2.1 Paredes Pav. Superior.035, 2.1 Paredes Pav. Superior.036, 2.1 Paredes Pav. Superior.037, 2.1 Paredes Pav. Superior.038, 2.1 Paredes Pav. Superior.039, 2.1 Paredes Pav. Superior.040, 2.1 Paredes Pav. Superior.041, 2.1 Paredes Pav. Superior.042, 2.1 Paredes Pav. Superior.043, 2.1 Paredes Pav. Superior.044
+ 2.2 ;PISO;m²;134,52;4.241,41;36.036,56;40.277,97;7,30%;
+ 2.3 ;REVESTIMENTO PAREDES;m²;847,16;23.265,93;38.283,62;61.549,55;11,16%;
+ 2.4 ;FORRO;m²;134,52;5.474,95;5.633,70;11.108,65;2,01%;
+ 2.5 ;ESQUADRIAS;UN;30;2.545,15;18.321,50;20.866,65;3,78%;2.5 Esquadrias Pav. Superior.001, 2.5 Esquadrias Pav. Superior.002, 2.5 Esquadrias Pav. Superior.003, 2.5 Esquadrias Pav. Superior.004, 2.5 Esquadrias Pav. Superior.005, 2.5 Esquadrias Pav. Superior.006, 2.5 Esquadrias Pav. Superior.007
+ 2.6 ;TELHADO;m²;171,21;2.352,41;9.740,15;12.092,56;2,19%;2.6 Telhado.001, 2.6 Telhado.002, 2.6 Telhado.003, 2.6 Telhado.004, 2.6 Telhado.005, 2.6 Telhado.006, 2.6 Telhado.007
+3;FUNDAÇÃO - EST;;;5.374,03;14.049,96;39.241,02;7,11%;
+ 3.1 ;Vigas;m³;5,9;5.374,03;14.049,96;19.423,99;3,52%;3.1 Vigas.001, 3.1 Vigas.002, 3.1 Vigas.003, 3.1 Vigas.004, 3.1 Vigas.005, 3.1 Vigas.006, 3.1 Vigas.007, 3.1 Vigas.008, 3.1 Vigas.009, 3.1 Vigas.010, 3.1 Vigas.011, 3.1 Vigas.012, 3.1 Vigas.013, 3.1 Vigas.014, 3.1 Vigas.015, 3.1 Vigas.016, 3.1 Vigas.017, 3.1 Vigas.018, 3.1 Vigas.019, 3.1 Vigas.020, 3.1 Vigas.021, 3.1 Vigas.022, 3.1 Vigas.023, 3.1 Vigas.024, 3.1 Vigas.025, 3.1 Vigas.026, 3.1 Vigas.027, 3.1 Vigas.028, 3.1 Vigas.029, 3.1 Vigas.030, 3.1 Vigas.031, 3.1 Vigas.032, 3.1 Vigas.033, 3.1 Vigas.034, 3.1 Vigas.035, 3.1 Vigas.036, 3.1 Vigas.037, 3.1 Vigas.038, 3.1 Vigas.039, 3.1 Vigas.040, 3.1 Vigas.041, 3.1 Vigas.042, 3.1 Vigas.043, 3.1 Vigas.044, 3.1 Vigas.045, 3.1 Vigas.046, 3.1 Vigas.047, 3.1 Vigas.048, 3.1 Vigas.049, 3.1 Vigas.050, 3.1 Vigas.051, 3.1 Vigas.052, 3.1 Vigas.053
+ 3.2 ;Pilares;m³;1,4;2.394,23;6.903,39;9.297,62;1,69%;3.2 Pilares.001, 3.2 Pilares.002, 3.2 Pilares.003, 3.2 Pilares.004, 3.2 Pilares.005, 3.2 Pilares.006, 3.2 Pilares.007, 3.2 Pilares.008, 3.2 Pilares.009, 3.2 Pilares.010, 3.2 Pilares.011, 3.2 Pilares.012, 3.2 Pilares.013, 3.2 Pilares.014, 3.2 Pilares.015, 3.2 Pilares.016, 3.2 Pilares.017, 3.2 Pilares.018, 3.2 Pilares.019, 3.2 Pilares.020, 3.2 Pilares.021, 3.2 Pilares.022, 3.2 Pilares.023, 3.2 Pilares.024, 3.2 Pilares.025, 3.2 Pilares.026, 3.2 Pilares.027, 3.2 Pilares.028
+ 3.3 ;Fundações;m³;5,4;3.077,84;7.441,57;10.519,41;1,91%;3.3 Fundações.001, 3.3 Fundações.002, 3.3 Fundações.003, 3.3 Fundações.004, 3.3 Fundações.005, 3.3 Fundações.006, 3.3 Fundações.007, 3.3 Fundações.008, 3.3 Fundações.009, 3.3 Fundações.010, 3.3 Fundações.011, 3.3 Fundações.012, 3.3 Fundações.013, 3.3 Fundações.014, 3.3 Fundações.015, 3.3 Fundações.016, 3.3 Fundações.017, 3.3 Fundações.018, 3.3 Fundações.019, 3.3 Fundações.020, 3.3 Fundações.021, 3.3 Fundações.022, 3.3 Fundações.023, 3.3 Fundações.024, 3.3 Fundações.025, 3.3 Fundações.026, 3.3 Fundações.027, 3.3 Fundações.028
+4;TÉRREO - EST;;;10.925,65;36.442,67;47.368,32;8,59%;
+ 4.1 ;Vigas;m³;6,2;3.894,85;13.483,37;17.378,22;3,15%;4.1 Vigas.001, 4.1 Vigas.002, 4.1 Vigas.003, 4.1 Vigas.004, 4.1 Vigas.005, 4.1 Vigas.006, 4.1 Vigas.007, 4.1 Vigas.008, 4.1 Vigas.009, 4.1 Vigas.010, 4.1 Vigas.011, 4.1 Vigas.012, 4.1 Vigas.013, 4.1 Vigas.014, 4.1 Vigas.015, 4.1 Vigas.016, 4.1 Vigas.017, 4.1 Vigas.018, 4.1 Vigas.019, 4.1 Vigas.020, 4.1 Vigas.021, 4.1 Vigas.022, 4.1 Vigas.023, 4.1 Vigas.024, 4.1 Vigas.025, 4.1 Vigas.026, 4.1 Vigas.027, 4.1 Vigas.028, 4.1 Vigas.029, 4.1 Vigas.030, 4.1 Vigas.031, 4.1 Vigas.032, 4.1 Vigas.033, 4.1 Vigas.034, 4.1 Vigas.035, 4.1 Vigas.036, 4.1 Vigas.037, 4.1 Vigas.038, 4.1 Vigas.039, 4.1 Vigas.040, 4.1 Vigas.041, 4.1 Vigas.042, 4.1 Vigas.043, 4.1 Vigas.044, 4.1 Vigas.045, 4.1 Vigas.046, 4.1 Vigas.047, 4.1 Vigas.048, 4.1 Vigas.049, 4.1 Vigas.050, 4.1 Vigas.051, 4.1 Vigas.052, 4.1 Vigas.053
+ 4.2 ;Pilares;m³;3,8;6.113,01;16.258,20;22.371,21;4,05%;4.2 Pilares.001, 4.2 Pilares.002, 4.2 Pilares.003, 4.2 Pilares.004, 4.2 Pilares.005, 4.2 Pilares.006, 4.2 Pilares.007, 4.2 Pilares.008, 4.2 Pilares.009, 4.2 Pilares.010, 4.2 Pilares.011, 4.2 Pilares.012, 4.2 Pilares.013, 4.2 Pilares.014, 4.2 Pilares.015, 4.2 Pilares.016, 4.2 Pilares.017, 4.2 Pilares.018, 4.2 Pilares.019, 4.2 Pilares.020, 4.2 Pilares.021, 4.2 Pilares.022, 4.2 Pilares.023, 4.2 Pilares.024, 4.2 Pilares.025, 4.2 Pilares.026, 4.2 Pilares.027, 4.2 Pilares.028
+ 4.3 ;Lajes;m³;6,7;917,79;6.701,10;7.618,89;1,38%;4.3 Lajes.001, 4.3 Lajes.002, 4.3 Lajes.003, 4.3 Lajes.004, 4.3 Lajes.005, 4.3 Lajes.006, 4.3 Lajes.007, 4.3 Lajes.008, 4.3 Lajes.009, 4.3 Lajes.010, 4.3 Lajes.011, 4.3 Lajes.012, 4.3 Lajes.013, 4.3 Lajes.014, 4.3 Lajes.015, 4.3 Lajes.016, 4.3 Lajes.017, 4.3 Lajes.018, 4.3 Lajes.019, 4.3 Lajes.020
+5;PAVIMENTO SUPERIOR - EST;;;11.162,43;29.574,76;40.737,19;7,38%;
+ 5.1 ;Vigas;m³;5,9;5.035,07;13.644,76;18.679,83;3,39%;5.1 Vigas.001, 5.1 Vigas.002, 5.1 Vigas.003, 5.1 Vigas.004, 5.1 Vigas.005, 5.1 Vigas.006, 5.1 Vigas.007, 5.1 Vigas.008, 5.1 Vigas.009, 5.1 Vigas.010, 5.1 Vigas.011, 5.1 Vigas.012, 5.1 Vigas.013, 5.1 Vigas.014, 5.1 Vigas.015, 5.1 Vigas.016, 5.1 Vigas.017, 5.1 Vigas.018, 5.1 Vigas.019, 5.1 Vigas.020, 5.1 Vigas.021, 5.1 Vigas.022, 5.1 Vigas.023, 5.1 Vigas.024, 5.1 Vigas.025, 5.1 Vigas.026, 5.1 Vigas.027, 5.1 Vigas.028, 5.1 Vigas.029, 5.1 Vigas.030, 5.1 Vigas.031, 5.1 Vigas.032, 5.1 Vigas.033, 5.1 Vigas.034, 5.1 Vigas.035, 5.1 Vigas.036, 5.1 Vigas.037, 5.1 Vigas.038, 5.1 Vigas.039, 5.1 Vigas.040, 5.1 Vigas.041, 5.1 Vigas.042, 5.1 Vigas.043, 5.1 Vigas.044, 5.1 Vigas.045, 5.1 Vigas.046, 5.1 Vigas.047, 5.1 Vigas.048, 5.1 Vigas.049, 5.1 Vigas.050, 5.1 Vigas.051, 5.1 Vigas.052, 5.1 Vigas.053
+ 5.2 ;Pilares;m³;3,8;6.090,85;15.966,51;22.057,36;4,00%;5.2 Pilares.001, 5.2 Pilares.002, 5.2 Pilares.003, 5.2 Pilares.004, 5.2 Pilares.005, 5.2 Pilares.006, 5.2 Pilares.007, 5.2 Pilares.008, 5.2 Pilares.009, 5.2 Pilares.010, 5.2 Pilares.011, 5.2 Pilares.012, 5.2 Pilares.013, 5.2 Pilares.014, 5.2 Pilares.015, 5.2 Pilares.016, 5.2 Pilares.017, 5.2 Pilares.018, 5.2 Pilares.019, 5.2 Pilares.020, 5.2 Pilares.021, 5.2 Pilares.022, 5.2 Pilares.023, 5.2 Pilares.024, 5.2 Pilares.025, 5.2 Pilares.026, 5.2 Pilares.027, 5.2 Pilares.028
+ 5.3 ;Lajes;m³;6,7;917,79;6.701,10;7.618,89;1,38%;5.3 Lajes.001, 5.3 Lajes.002, 5.3 Lajes.003, 5.3 Lajes.004, 5.3 Lajes.005, 5.3 Lajes.006, 5.3 Lajes.007, 5.3 Lajes.008, 5.3 Lajes.009, 5.3 Lajes.010, 5.3 Lajes.011, 5.3 Lajes.012, 5.3 Lajes.013, 5.3 Lajes.014, 5.3 Lajes.015, 5.3 Lajes.016, 5.3 Lajes.017, 5.3 Lajes.018, 5.3 Lajes.019, 5.3 Lajes.020
+;;;;175.326,86;376.397,37;551.724,23;;
+;;;;;;;;
+;;;;;551.724,23;;;
+;;;;;0,00;;;
+;;;;;551.724,23;;;
+;;;;;;;;
+"_______________________________________________________________
+";;;;;;;;`;
 
 export const carregarDados = async (): Promise<OrcamentoItem[]> => {
   try {
@@ -37,6 +55,9 @@ export const carregarDados = async (): Promise<OrcamentoItem[]> => {
       `/5D.csv?t=${timestamp}`, 
       `./5D.csv?t=${timestamp}`, 
       `5D.csv?t=${timestamp}`,
+      `/public/5D.csv?t=${timestamp}`,
+      `./public/5D.csv?t=${timestamp}`,
+      `public/5D.csv?t=${timestamp}`,
       `/5d.csv?t=${timestamp}`, 
       `./5d.csv?t=${timestamp}`, 
       `5d.csv?t=${timestamp}`
