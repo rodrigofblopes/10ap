@@ -84,7 +84,14 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
       
       // Selecionar item para highlight no 3D
       console.log('🎯 Selecionando subcategoria para highlight no 3D:', item.id);
-      onItemSelect(item);
+      console.log('🎯 Item completo sendo passado:', item);
+      console.log('🎯 onItemSelect disponível?', !!onItemSelect);
+      if (onItemSelect) {
+        onItemSelect(item);
+        console.log('✅ onItemSelect chamado com sucesso');
+      } else {
+        console.log('❌ onItemSelect não está disponível!');
+      }
     }
   };
 
@@ -475,81 +482,37 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
                           </div>
                         </div>
                         
-                        {/* Subcoleções Individuais 3D */}
-                        {subcategoria.elementos3D && (
-                          <div className="mt-4 pt-3 border-t border-gray-200">
-                            <div className="mb-2">
-                              <span className="text-xs font-medium text-gray-700">Elementos 3D ({getIndividualSubcollections(subcategoria).length}):</span>
-                            </div>
-                            <div className="space-y-1 max-h-32 overflow-y-auto">
-                              {getIndividualSubcollections(subcategoria).map((subcollection, index) => (
-                                <div key={index} className="flex items-center justify-between text-xs bg-gray-50 p-2 rounded">
-                                  <span className="text-gray-700 font-mono text-xs">
-                                    {subcollection}
-                                  </span>
-                                  <button
-                                    onClick={(e) => handleSubcollectionToggle(e, subcollection, subcategoria)}
-                                    className={`p-1 rounded transition-all duration-200 border ${
-                                      isSubcollectionHidden(subcollection)
-                                        ? 'text-red-500 hover:text-red-700 hover:bg-red-50 border-red-300 bg-red-50'
-                                        : 'text-green-500 hover:text-green-700 hover:bg-green-50 border-green-300 bg-green-50'
-                                    }`}
-                                    title={isSubcollectionHidden(subcollection) ? 'Mostrar elemento' : 'Ocultar elemento'}
-                                  >
-                                    {isSubcollectionHidden(subcollection) ? (
-                                      <div 
-                                        className="relative inline-block"
-                                        style={{
-                                          textDecoration: 'line-through',
-                                          textDecorationColor: '#ef4444',
-                                          textDecorationThickness: '1px'
-                                        }}
-                                      >
-                                        <EyeOff className="h-3 w-3" />
-                                      </div>
-                                    ) : (
-                                      <Eye className="h-3 w-3" />
-                                    )}
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                            
-                            {/* Botões de controle em lote para subcoleções */}
-                            {getIndividualSubcollections(subcategoria).length > 1 && (
-                              <div className="mt-2 flex gap-2">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    // Ocultar todas as subcoleções
-                                    const fakeItem = { ...subcategoria, elementos3D: subcategoria.elementos3D };
-                                    if (onToggleVisibility) onToggleVisibility(fakeItem);
-                                  }}
-                                  className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-                                  title="Ocultar todos os elementos"
-                                >
-                                  Ocultar Todos
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    // Mostrar todas as subcoleções (removendo todas do hiddenElements)
-                                    getIndividualSubcollections(subcategoria).forEach(sub => {
-                                      const fakeItem = { ...subcategoria, elementos3D: sub };
-                                      if (onToggleVisibility && isSubcollectionHidden(sub)) {
-                                        onToggleVisibility(fakeItem);
-                                      }
-                                    });
-                                  }}
-                                  className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                                  title="Mostrar todos os elementos"
-                                >
-                                  Mostrar Todos
-                                </button>
-                              </div>
-                            )}
+                        {/* Botão de toggle de visibilidade */}
+                        {onToggleVisibility && subcategoria.elementos3D && (
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                console.log('👁️ Toggle visibilidade para:', subcategoria.id);
+                                onToggleVisibility(subcategoria);
+                              }}
+                              className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                hasHiddenElements(subcategoria)
+                                  ? 'bg-red-100 text-red-700 hover:bg-red-200 border border-red-300'
+                                  : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-300'
+                              }`}
+                              title={hasHiddenElements(subcategoria) ? 'Mostrar elementos' : 'Ocultar elementos'}
+                            >
+                              {hasHiddenElements(subcategoria) ? (
+                                <>
+                                  <Eye className="h-4 w-4" />
+                                  Mostrar Elementos 3D
+                                </>
+                              ) : (
+                                <>
+                                  <EyeOff className="h-4 w-4" />
+                                  Ocultar Elementos 3D
+                                </>
+                              )}
+                            </button>
                           </div>
                         )}
+                        
                       </div>
                     )}
                   </div>
