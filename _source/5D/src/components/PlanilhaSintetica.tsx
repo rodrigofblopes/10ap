@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { OrcamentoItem } from '../types/orcamento';
-import { Table, Eye, EyeOff, ChevronDown, ChevronRight } from 'lucide-react';
+import { Table, Eye, EyeOff, ChevronDown, ChevronRight, EyeIcon, EyeSlashIcon } from 'lucide-react';
 
 interface PlanilhaSinteticaProps {
   itens: OrcamentoItem[];
@@ -20,6 +20,7 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
   hiddenElements = new Set()
 }) => {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [categoriesWithHiddenElements, setCategoriesWithHiddenElements] = useState<Set<string>>(new Set());
 
   // Debug: verificar se as props estão sendo recebidas
   console.log('🔧 PlanilhaSintetica - Props recebidas:', {
@@ -27,6 +28,14 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
     onToggleVisibility: !!onToggleVisibility,
     hiddenElements: hiddenElements.size
   });
+
+  // Sincronizar estado local com mudanças nos hiddenElements
+  useEffect(() => {
+    // Limpar estado local quando hiddenElements é limpo
+    if (hiddenElements.size === 0) {
+      setCategoriesWithHiddenElements(new Set());
+    }
+  }, [hiddenElements]);
 
   // Função para formatar valores monetários
   const formatarMoeda = (valor: number) => {
@@ -98,78 +107,39 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
 
   const isExpanded = (itemId: string) => expandedItems.includes(itemId);
 
-  // Função para verificar se um item tem elementos ocultos
+  // Função simplificada para verificar se um item tem elementos ocultos
   const hasHiddenElements = (item: OrcamentoItem) => {
     if (!item.elementos3D || !onToggleVisibility) return false;
     
-    console.log('🔍 Verificando elementos ocultos para item:', item.id);
-    console.log('🔍 Elementos3D:', item.elementos3D);
-    console.log('🔍 Hidden elements atual:', Array.from(hiddenElements));
-    
-    // Usar a mesma lógica que funciona no highlight
-    // Se o highlight está funcionando, vamos usar uma abordagem mais simples
+    // Lógica simplificada: verificar se algum elemento do item está na lista de elementos ocultos
     const elementosArray = item.elementos3D.split(',').map((el: string) => el.trim());
-    console.log('🔍 Elementos array da planilha:', elementosArray);
     
-    // Verificar se algum elemento da planilha tem correspondência no hiddenElements
-    const hasHidden = elementosArray.some(elemento => {
-      // Para elementos como "1.1 Paredes Térreo.001", verificar se existe correspondência
+    return elementosArray.some(elemento => {
+      // Verificação direta primeiro
+      if (hiddenElements.has(elemento)) return true;
+      
+      // Verificação por padrão de código (ex: "1.1_001")
       if (elemento.includes('.')) {
         const partes = elemento.split('.');
         if (partes.length >= 2) {
-          const prefixo = partes[0]; // "1.1 Paredes Térreo"
-          const numeroFinal = partes[partes.length - 1]; // "001"
-          const codigo = prefixo.replace(/\s.*/, '').replace('.', ''); // "11"
+          const codigo = partes[0].replace(/\s.*/, '').replace('.', '');
+          const numero = partes[partes.length - 1];
+          const padrao = `${codigo}_${numero}`;
           
-          // Verificar se algum elemento oculto corresponde a este padrão
-          return Array.from(hiddenElements).some(hiddenEl => {
-            // Verificar se o elemento oculto corresponde ao código e número
-            const matches = hiddenEl.includes(codigo + '_') && 
-                           (hiddenEl.includes(numeroFinal) || hiddenEl.includes(numeroFinal.padStart(3, '0')));
-            if (matches) {
-              console.log(`🔍 Elemento "${elemento}" corresponde ao elemento oculto "${hiddenEl}"`);
-            }
-            return matches;
-          });
-        }
-      } else {
-        // Para elementos sem ponto, verificar por código
-        const codigoItem = item.id || item.codigo;
-        if (codigoItem) {
-          const codigo = codigoItem.replace('.', '');
-          return Array.from(hiddenElements).some(hiddenEl => {
-            const matches = hiddenEl.startsWith(codigo + '_');
-            if (matches) {
-              console.log(`🔍 Elemento "${elemento}" corresponde ao elemento oculto "${hiddenEl}"`);
-            }
-            return matches;
-          });
+          return Array.from(hiddenElements).some(hiddenEl => 
+            hiddenEl.includes(padrao) || hiddenEl.includes(codigo + '_')
+          );
         }
       }
+      
       return false;
     });
-    
-    console.log('🔍 Item tem elementos ocultos?', hasHidden);
-    return hasHidden;
   };
 
-  // Função para verificar se uma categoria principal tem subcategorias com elementos ocultos
+  // Função para verificar se uma categoria principal tem elementos ocultos
   const categoryHasHiddenElements = (categoria: OrcamentoItem) => {
-    const subcategoriasDaCategoria = subcategorias.filter(
-      sub => sub.codigo?.startsWith(categoria.codigo || '')
-    );
-    
-    console.log('🏗️ Verificando categoria principal:', categoria.id);
-    console.log('🏗️ Subcategorias encontradas:', subcategoriasDaCategoria.length);
-    
-    const hasHidden = subcategoriasDaCategoria.some(sub => {
-      const subHasHidden = hasHiddenElements(sub);
-      console.log(`🏗️ Subcategoria ${sub.id} tem elementos ocultos?`, subHasHidden);
-      return subHasHidden;
-    });
-    
-    console.log('🏗️ Categoria principal tem elementos ocultos?', hasHidden);
-    return hasHidden;
+    // Verificar se esta categoria específica foi marcada como tendo elementos ocultos
+    return categoriesWithHiddenElements.has(categoria.id);
   };
 
   // Função para obter subcoleções individuais de um item
@@ -223,22 +193,104 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
     return directMatch;
   };
 
-  // Função para lidar com o clique no ícone de visibilidade
+  // Componente de ícone de visibilidade melhorado
+  const VisibilityIcon = ({ 
+    item, 
+    isHidden, 
+    isDisabled = false, 
+    size = "sm" 
+  }: { 
+    item: OrcamentoItem; 
+    isHidden: boolean; 
+    isDisabled?: boolean; 
+    size?: "sm" | "md" | "lg" 
+  }) => {
+    const sizeClasses = {
+      sm: "h-4 w-4",
+      md: "h-5 w-5", 
+      lg: "h-6 w-6"
+    };
+
+    const handleClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      
+      if (isDisabled || !onToggleVisibility) return;
+      
+      console.log('👁️ Toggle visibilidade para:', item.id);
+      
+      // Se é uma categoria principal, atualizar o estado local
+      if (item.isEtapaTotal) {
+        setCategoriesWithHiddenElements(prev => {
+          const newSet = new Set(prev);
+          if (isHidden) {
+            newSet.delete(item.id); // Remover da lista de ocultos
+          } else {
+            newSet.add(item.id); // Adicionar à lista de ocultos
+          }
+          console.log('🏗️ Categorias com elementos ocultos:', Array.from(newSet));
+          return newSet;
+        });
+      }
+      
+      onToggleVisibility(item);
+    };
+
+    const getButtonClasses = () => {
+      const baseClasses = "relative p-1.5 rounded-md transition-all duration-300 border-2 group";
+      
+      if (isDisabled) {
+        return `${baseClasses} text-gray-400 cursor-not-allowed opacity-50 border-gray-200 bg-gray-50`;
+      }
+      
+      if (isHidden) {
+        return `${baseClasses} text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300 bg-red-50 hover:shadow-md hover:scale-105`;
+      }
+      
+      return `${baseClasses} text-green-600 hover:text-green-700 hover:bg-green-50 border-green-300 bg-green-50 hover:shadow-md hover:scale-105`;
+    };
+
+    const getIconClasses = () => {
+      const baseClasses = `${sizeClasses[size]} transition-all duration-300`;
+      
+      if (isHidden) {
+        return `${baseClasses} group-hover:animate-pulse`;
+      }
+      
+      return `${baseClasses} group-hover:animate-bounce`;
+    };
+
+    return (
+      <button
+        onClick={handleClick}
+        className={getButtonClasses()}
+        title={
+          isDisabled 
+            ? 'Sem elementos 3D associados'
+            : isHidden 
+              ? 'Mostrar elementos 3D' 
+              : 'Ocultar elementos 3D'
+        }
+        disabled={isDisabled}
+      >
+        {isHidden ? (
+          <div className="relative">
+            <EyeOff className={getIconClasses()} />
+            {/* Indicador de elementos ocultos */}
+            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+          </div>
+        ) : (
+          <Eye className={getIconClasses()} />
+        )}
+      </button>
+    );
+  };
+
+  // Função para lidar com o clique no ícone de visibilidade (mantida para compatibilidade)
   const handleVisibilityToggle = (e: React.MouseEvent, item: OrcamentoItem) => {
-    e.stopPropagation(); // Prevenir que o clique no ícone acione o clique no item
-    
-    console.log('👁️ ===== CLIQUE NO ÍCONE DE VISIBILIDADE =====');
-    console.log('👁️ Item clicado:', item);
-    console.log('👁️ Item é categoria principal?', item.isEtapaTotal);
-    console.log('👁️ Item é subcategoria?', !item.isEtapaTotal);
-    console.log('👁️ onToggleVisibility disponível?', !!onToggleVisibility);
-    console.log('👁️ Elementos3D do item:', item.elementos3D);
+    e.stopPropagation();
     
     if (onToggleVisibility) {
-      console.log('👁️ Chamando onToggleVisibility...');
       onToggleVisibility(item);
-    } else {
-      console.log('❌ onToggleVisibility não está disponível!');
     }
   };
 
@@ -305,34 +357,11 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
                       </div>
                       {/* Ícone de visibilidade para categoria principal */}
                       {onToggleVisibility && (
-                        <button
-                          onClick={(e) => handleVisibilityToggle(e, categoria)}
-                          className={`p-1.5 rounded-md transition-all duration-200 border ${
-                            categoryHasHiddenElements(categoria)
-                              ? 'text-red-500 hover:text-red-700 hover:bg-red-50 hover:shadow-sm border-red-300 bg-red-50'
-                              : 'text-blue-500 hover:text-blue-700 hover:bg-blue-100 hover:shadow-sm border-blue-300 bg-blue-50'
-                          }`}
-                          title={
-                            categoryHasHiddenElements(categoria)
-                              ? 'Categoria tem elementos ocultos - clique para mostrar todos'
-                              : 'Controlar visibilidade de toda a categoria'
-                          }
-                        >
-                          {categoryHasHiddenElements(categoria) ? (
-                            <div 
-                              className="relative inline-block"
-                              style={{
-                                textDecoration: 'line-through',
-                                textDecorationColor: '#ef4444',
-                                textDecorationThickness: '2px'
-                              }}
-                            >
-                              <EyeOff className="h-4 w-4" />
-                            </div>
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
+                        <VisibilityIcon 
+                          item={categoria}
+                          isHidden={categoryHasHiddenElements(categoria)}
+                          size="sm"
+                        />
                       )}
                     </div>
                     <div className="text-xs text-blue-700 mt-1">
@@ -385,41 +414,12 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
                           </div>
                           {/* Ícone de visibilidade - sempre mostrar */}
                           {onToggleVisibility && (
-                            <button
-                              onClick={(e) => handleVisibilityToggle(e, subcategoria)}
-                              className={`p-1.5 rounded-md transition-all duration-200 border ${
-                                !subcategoria.elementos3D 
-                                  ? 'text-gray-400 cursor-not-allowed opacity-50 border-gray-300'
-                                  : hasHidden 
-                                    ? 'text-red-500 hover:text-red-700 hover:bg-red-50 hover:shadow-sm border-red-300 bg-red-50' 
-                                    : 'text-green-500 hover:text-green-700 hover:bg-green-50 hover:shadow-sm border-green-300 bg-green-50'
-                              }`}
-                              title={
-                                !subcategoria.elementos3D 
-                                  ? 'Sem elementos 3D associados'
-                                  : hasHidden 
-                                    ? 'Mostrar elementos 3D' 
-                                    : 'Ocultar elementos 3D'
-                              }
-                              disabled={!subcategoria.elementos3D}
-                            >
-                              {!subcategoria.elementos3D ? (
-                                <Eye className="h-4 w-4 opacity-50" />
-                              ) : hasHidden ? (
-                                <div 
-                                  className="relative inline-block"
-                                  style={{
-                                    textDecoration: 'line-through',
-                                    textDecorationColor: '#ef4444',
-                                    textDecorationThickness: '2px'
-                                  }}
-                                >
-                                  <EyeOff className="h-4 w-4" />
-                                </div>
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </button>
+                            <VisibilityIcon 
+                              item={subcategoria}
+                              isHidden={hasHidden}
+                              isDisabled={!subcategoria.elementos3D}
+                              size="sm"
+                            />
                           )}
                         </div>
                         <div className="text-xs text-gray-600 mt-1">
@@ -489,26 +489,13 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
                         
                         {/* Botão de toggle de visibilidade */}
                         {onToggleVisibility && subcategoria.elementos3D && (
-                          <div className="mt-3 pt-3 border-t border-gray-200">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                console.log('👁️ Toggle visibilidade para:', subcategoria.id);
-                                onToggleVisibility(subcategoria);
-                              }}
-                              className={`p-2 rounded-lg transition-all duration-200 ${
-                                hasHiddenElements(subcategoria)
-                                  ? 'bg-red-100 text-red-700 hover:bg-red-200 border border-red-300'
-                                  : 'bg-green-100 text-green-700 hover:bg-green-200 border border-green-300'
-                              }`}
-                              title={hasHiddenElements(subcategoria) ? 'Mostrar elementos' : 'Ocultar elementos'}
-                            >
-                              {hasHiddenElements(subcategoria) ? (
-                                <Eye className="h-4 w-4" />
-                              ) : (
-                                <EyeOff className="h-4 w-4" />
-                              )}
-                            </button>
+                          <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between">
+                            <span className="text-sm text-gray-600">Controle de visibilidade:</span>
+                            <VisibilityIcon 
+                              item={subcategoria}
+                              isHidden={hasHiddenElements(subcategoria)}
+                              size="md"
+                            />
                           </div>
                         )}
                         
@@ -566,10 +553,16 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
             <span>Clique para expandir/colapsar</span>
           </div>
           {onToggleVisibility && (
-            <div className="flex items-center space-x-1">
-              <Eye className="h-3 w-3 text-green-500" />
-              <span>Ocultar/Mostrar 3D</span>
-            </div>
+            <>
+              <div className="flex items-center space-x-1">
+                <Eye className="h-3 w-3 text-green-500" />
+                <span>Elementos visíveis</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <EyeOff className="h-3 w-3 text-red-500" />
+                <span>Elementos ocultos</span>
+              </div>
+            </>
           )}
         </div>
       </div>

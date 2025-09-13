@@ -54,7 +54,7 @@ function App() {
       <Header />
       <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 lg:py-8">
         <Navigation activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="mt-2 sm:mt-4 lg:mt-6">
+        <div className="mt-2 sm:mt-4 lg:mt-6 pb-20 lg:pb-0">
           {renderContent()}
         </div>
       </div>
