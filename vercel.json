@@ -2,7 +2,7 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/((?!assets/|.*\\.csv|.*\\.glb|.*\\.wasm|.*\\.js|.*\\.css|.*\\.html|.*\\.jpg|.*\\.png|.*\\.ico).*)",
       "destination": "/index.html"
     }
   ],
