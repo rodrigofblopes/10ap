@@ -432,14 +432,15 @@ export const processarDadosCSV5DARQ = (csvContent: string): OrcamentoItem[] => {
       }
 
       // Debug para entender por que alguns itens não são processados
-      if (i < 10) {
-        console.log(`Validação linha ${i}:`, {
+      if (i < 15 || item?.startsWith('3.') || item?.startsWith('4.') || item?.startsWith('5.')) {
+        console.log(`🔍 Validação linha ${i}:`, {
           item,
           descricao,
           quantidade,
           totalFinal,
           isEtapaTotal,
-          condicao: item && descricao && (quantidade > 0 || totalFinal > 0 || isEtapaTotal)
+          condicao: item && descricao && (quantidade > 0 || totalFinal > 0 || isEtapaTotal),
+          categoria: item?.startsWith('3.') ? 'EST-Fundação' : item?.startsWith('4.') ? 'EST-Térreo' : item?.startsWith('5.') ? 'EST-Superior' : 'ARQ'
         });
       }
 
