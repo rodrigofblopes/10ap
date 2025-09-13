@@ -2031,14 +2031,12 @@ function usePlanilha3DLink(itens5D: any[]) {
 // Componente principal do Viewer 5D
 export default function Viewer5D() {
   const { itens } = useOrcamentoStore();
-  const [loading, setLoading] = useState(false);
   
   const {
     selectedItems,
     highlightedElements,
     hiddenElements,
     setGlbElements,
-    setHighlightedElements,
     handleItemSelect,
     toggleElementVisibility
   } = usePlanilha3DLink(itens);

@@ -598,7 +598,17 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
                   console.log('🧪 TESTE 1: Subcoleção individual');
                   const testItem = {
                     id: 'test_sub',
+                    codigo: '1.1.001',
+                    nome: 'Teste Subcoleção',
+                    descricao: 'Paredes Térreo.001',
+                    categoria: '1',
+                    subcategoria: '1.1',
+                    unidade: 'm²',
+                    quantidade: 1,
+                    precoUnitario: 0,
+                    precoTotal: 0,
                     elementos3D: '1.1 Paredes Térreo.001',
+                    isEtapaTotal: false,
                     isSubcollection: true
                   };
                   console.log('🧪 Item de teste:', testItem);
@@ -614,9 +624,17 @@ const PlanilhaSintetica: React.FC<PlanilhaSinteticaProps> = ({
                   const testItem = {
                     id: '1.1',
                     codigo: '1.1',
+                    nome: 'Paredes Térreo',
                     descricao: 'Paredes Térreo',
+                    categoria: '1',
+                    subcategoria: '1.1',
+                    unidade: 'm²',
+                    quantidade: 1,
+                    precoUnitario: 0,
+                    precoTotal: 0,
                     elementos3D: '1.1 Paredes Térreo.001, 1.1 Paredes Térreo.002, 1.1 Paredes Térreo.003',
-                    isEtapaTotal: false
+                    isEtapaTotal: false,
+                    isSubcollection: false
                   };
                   console.log('🧪 Item de teste:', testItem);
                   onToggleVisibility(testItem);
