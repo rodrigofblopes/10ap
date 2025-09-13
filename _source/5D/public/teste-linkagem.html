@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Linkagem - 5D Dashboard</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #ffd700, #ffeb3b);
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .section {
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .test-result {
+            background: #001122;
+            border-left: 4px solid #00aaff;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .success { border-left-color: #00ff00; background: #002200; }
+        .error { border-left-color: #ff0000; background: #220000; }
+        .warning { border-left-color: #ffaa00; background: #221100; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #555;
+            padding: 8px;
+            text-align: left;
+        }
+        .data-table th {
+            background: #333;
+            color: #ffd700;
+        }
+        pre {
+            background: #111;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔗 TESTE DE LINKAGEM 5D</h1>
+        <p>Verificação da linkagem entre Planilha CSV ↔ Modelo 3D GLB</p>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Testes de Linkagem</h2>
+        <button onclick="testarLinkagem()">🔍 Testar Linkagem Completa</button>
+        <button onclick="analisarPlanilha()">📊 Analisar Planilha CSV</button>
+        <button onclick="analisarModelo3D()">🎲 Analisar Modelo 3D</button>
+        <button onclick="validarMapeamento()">✅ Validar Mapeamento</button>
+        <button onclick="limparLog()">🧹 Limpar Log</button>
+    </div>
+
+    <div id="resultados" class="section">
+        <h2>📋 Resultados dos Testes</h2>
+        <div id="log">Clique em "Testar Linkagem Completa" para começar...</div>
+    </div>
+
+    <div class="section">
+        <h2>📊 Dados de Debug</h2>
+        <div id="debug-data">
+            <p>Os dados aparecerão aqui após executar os testes...</p>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'test-result') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const classes = {
+                'success': 'success',
+                'error': 'error',
+                'warning': 'warning',
+                'test-result': 'test-result'
+            };
+            
+            logDiv.innerHTML += `<div class="test-result ${classes[type]}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function limparLog() {
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('debug-data').innerHTML = '<p>Dados limpos...</p>';
+        }
+
+        async function analisarPlanilha() {
+            log('📊 === ANÁLISE DA PLANILHA CSV ===', 'test-result');
+            
+            try {
+                const response = await fetch('./5d.csv');
+                if (!response.ok) {
+                    log('❌ Erro ao carregar planilha CSV', 'error');
+                    return;
+                }
+                
+                const csvText = await response.text();
+                const lines = csvText.split('\n');
+                
+                log(`📄 Planilha carregada: ${lines.length} linhas`, 'success');
+                
+                // Analisar cabeçalho
+                const header = lines[1]; // Linha 2 tem o cabeçalho
+                const columns = header.split(';');
+                log(`🏷️ Colunas encontradas: ${columns.length}`, 'test-result');
+                log(`📋 Colunas: ${columns.map((col, i) => `${i}: "${col.trim()}"`).join(', ')}`, 'test-result');
+                
+                // Verificar se existe coluna Elementos3D
+                const elementos3DIndex = columns.findIndex(col => col.trim().toLowerCase().includes('elementos3d') || col.trim().toLowerCase().includes('elementos 3d'));
+                if (elementos3DIndex >= 0) {
+                    log(`✅ Coluna "Elementos3D" encontrada no índice ${elementos3DIndex}`, 'success');
+                } else {
+                    log('❌ Coluna "Elementos3D" NÃO encontrada!', 'error');
+                }
+                
+                // Analisar itens com dados
+                let itensComElementos3D = 0;
+                let itensComDados = 0;
+                const elementosExemplo = [];
+                
+                for (let i = 4; i < lines.length; i++) { // Pular cabeçalhos
+                    const line = lines[i].trim();
+                    if (!line || line.startsWith(';') || line.includes('____')) continue;
+                    
+                    const cols = line.split(';');
+                    if (cols.length >= 8) {
+                        itensComDados++;
+                        const item = cols[0]?.trim();
+                        const elementos3D = cols[8]?.trim(); // Coluna 9 (índice 8)
+                        
+                        if (elementos3D && elementos3D !== '') {
+                            itensComElementos3D++;
+                            if (elementosExemplo.length < 5) {
+                                elementosExemplo.push({
+                                    item: item,
+                                    elementos: elementos3D
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                log(`📊 Itens com dados: ${itensComDados}`, 'test-result');
+                log(`🔗 Itens com Elementos3D: ${itensComElementos3D}`, itensComElementos3D > 0 ? 'success' : 'warning');
+                
+                if (elementosExemplo.length > 0) {
+                    log('📋 Exemplos de mapeamento:', 'test-result');
+                    elementosExemplo.forEach(ex => {
+                        log(`   ${ex.item}: "${ex.elementos}"`, 'test-result');
+                    });
+                } else {
+                    log('⚠️ Nenhum item com Elementos3D encontrado!', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ Erro na análise: ${error}`, 'error');
+            }
+        }
+
+        async function analisarModelo3D() {
+            log('🎲 === ANÁLISE DO MODELO 3D ===', 'test-result');
+            
+            // Verificar se o GLB existe
+            try {
+                const response = await fetch('./5d.glb');
+                if (response.ok) {
+                    const size = response.headers.get('content-length');
+                    log(`✅ Modelo GLB encontrado (${size ? Math.round(size/1024) + 'KB' : 'tamanho desconhecido'})`, 'success');
+                } else {
+                    log('❌ Modelo GLB não encontrado!', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro ao verificar GLB: ${error}`, 'error');
+            }
+            
+            // Verificar dados do dashboard principal
+            if (window.opener) {
+                try {
+                    const debugData = window.opener.debugData;
+                    const glbElements = window.opener.glbElements;
+                    
+                    if (glbElements && glbElements.length > 0) {
+                        log(`🎯 Elementos 3D carregados no dashboard: ${glbElements.length}`, 'success');
+                        
+                        // Analisar categorias
+                        const categorias = {
+                            fundacao: glbElements.filter(el => el.includes('3.') || el.toLowerCase().includes('fundacao')).length,
+                            terreo: glbElements.filter(el => el.includes('1.') || el.includes('4.')).length,
+                            superior: glbElements.filter(el => el.includes('2.') || el.includes('5.')).length,
+                            outros: 0
+                        };
+                        categorias.outros = glbElements.length - categorias.fundacao - categorias.terreo - categorias.superior;
+                        
+                        log(`🏗️ Distribuição por categoria:`, 'test-result');
+                        log(`   Fundação: ${categorias.fundacao} elementos`, 'test-result');
+                        log(`   Térreo: ${categorias.terreo} elementos`, 'test-result');
+                        log(`   Superior: ${categorias.superior} elementos`, 'test-result');
+                        log(`   Outros: ${categorias.outros} elementos`, 'test-result');
+                        
+                        // Mostrar primeiros elementos
+                        log('📋 Primeiros 10 elementos do modelo:', 'test-result');
+                        glbElements.slice(0, 10).forEach((el, i) => {
+                            log(`   ${i+1}. "${el}"`, 'test-result');
+                        });
+                        
+                    } else {
+                        log('⚠️ Nenhum elemento 3D carregado no dashboard', 'warning');
+                    }
+                } catch (error) {
+                    log('⚠️ Não foi possível acessar dados do dashboard principal', 'warning');
+                }
+            } else {
+                log('ℹ️ Execute este teste com o dashboard principal aberto', 'test-result');
+            }
+        }
+
+        async function validarMapeamento() {
+            log('✅ === VALIDAÇÃO DO MAPEAMENTO ===', 'test-result');
+            
+            // Verificar arquivo de mapeamento
+            try {
+                const response = await fetch('./mapeamento-elementos.json');
+                if (response.ok) {
+                    const mapeamento = await response.json();
+                    log('✅ Arquivo de mapeamento carregado', 'success');
+                    
+                    const elementos = mapeamento.mapeamento_elementos_3d;
+                    const chaves = Object.keys(elementos);
+                    log(`📊 ${chaves.length} itens mapeados no JSON`, 'test-result');
+                    
+                    // Verificar alguns exemplos
+                    chaves.slice(0, 5).forEach(chave => {
+                        const item = elementos[chave];
+                        const qtdElementos = item.elementos ? item.elementos.length : 0;
+                        log(`   ${chave}: ${item.descricao} (${qtdElementos} elementos)`, 'test-result');
+                    });
+                    
+                } else {
+                    log('❌ Arquivo de mapeamento não encontrado', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro ao carregar mapeamento: ${error}`, 'error');
+            }
+        }
+
+        async function testarLinkagem() {
+            log('🔗 === TESTE COMPLETO DE LINKAGEM ===', 'test-result');
+            log('🔄 Executando todos os testes...', 'test-result');
+            
+            await analisarPlanilha();
+            await analisarModelo3D();
+            await validarMapeamento();
+            
+            log('✅ === TESTE COMPLETO FINALIZADO ===', 'success');
+            log('📊 Veja os resultados acima para identificar problemas', 'test-result');
+            
+            // Resumo final
+            log('🎯 === RESUMO PARA CORREÇÃO ===', 'test-result');
+            log('1. ✅ A planilha CSV tem a coluna Elementos3D?', 'test-result');
+            log('2. ✅ Os itens têm valores na coluna Elementos3D?', 'test-result');
+            log('3. ✅ O modelo GLB foi carregado com sucesso?', 'test-result');
+            log('4. ✅ Os nomes dos elementos coincidem?', 'test-result');
+            log('💡 Se algum item acima falhou, esse é o problema da linkagem!', 'warning');
+        }
+
+        // Auto-executar ao carregar
+        window.onload = function() {
+            log('🚀 Teste de linkagem inicializado', 'success');
+            log('💡 Execute "Testar Linkagem Completa" para uma análise detalhada', 'test-result');
+        };
+    </script>
+</body>
+</html>

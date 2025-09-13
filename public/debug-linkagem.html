@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Linkagem - Teste Específico</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #ffd700, #ffeb3b);
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .section {
+            background: #2a2a2a;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .result {
+            background: #001122;
+            border-left: 4px solid #00aaff;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .success { border-left-color: #00ff00; background: #002200; }
+        .error { border-left-color: #ff0000; background: #220000; }
+        .warning { border-left-color: #ffaa00; background: #221100; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #45a049; }
+        pre {
+            background: #111;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 11px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 11px;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #555;
+            padding: 5px;
+            text-align: left;
+        }
+        .data-table th {
+            background: #333;
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔗 DEBUG LINKAGEM ESPECÍFICO</h1>
+        <p>Teste detalhado da linkagem planilha ↔ modelo 3D</p>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Testes Específicos</h2>
+        <button onclick="testarCSV()">📊 Testar CSV</button>
+        <button onclick="testarGLB()">🎲 Testar GLB</button>
+        <button onclick="testarLinkagem()">🔗 Testar Linkagem</button>
+        <button onclick="simularClick()">🖱️ Simular Click Item</button>
+        <button onclick="limpar()">🧹 Limpar</button>
+    </div>
+
+    <div id="resultados" class="section">
+        <h2>📋 Resultados</h2>
+        <div id="log">Clique em um dos testes acima...</div>
+    </div>
+
+    <div class="section">
+        <h2>📊 Dados Detalhados</h2>
+        <div id="dados-detalhados">
+            <table class="data-table" id="tabela-csv" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Descrição</th>
+                        <th>Elementos3D</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-csv"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'result') {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const classes = {
+                'success': 'success',
+                'error': 'error',
+                'warning': 'warning',
+                'result': 'result'
+            };
+            
+            logDiv.innerHTML += `<div class="result ${classes[type]}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function limpar() {
+            document.getElementById('log').innerHTML = '';
+            document.getElementById('tabela-csv').style.display = 'none';
+        }
+
+        async function testarCSV() {
+            log('📊 === TESTE DETALHADO DO CSV ===', 'result');
+            
+            try {
+                const response = await fetch('./5D.csv');
+                if (!response.ok) {
+                    log('❌ Erro ao carregar 5D.csv', 'error');
+                    return;
+                }
+                
+                const csvText = await response.text();
+                const lines = csvText.split('\n');
+                
+                log(`📄 CSV carregado: ${lines.length} linhas`, 'success');
+                
+                // Analisar cabeçalho
+                const headerLine = lines[1]; // Linha 2
+                const columns = headerLine.split(';');
+                log(`🏷️ Cabeçalho: ${columns.map((col, i) => `${i}:"${col.trim()}"`).join(', ')}`, 'result');
+                
+                // Verificar coluna Elementos3D
+                const elementos3DIndex = columns.findIndex(col => 
+                    col.trim().toLowerCase() === 'elementos3d' || 
+                    col.trim().toLowerCase() === 'elementos 3d'
+                );
+                
+                if (elementos3DIndex >= 0) {
+                    log(`✅ Coluna Elementos3D encontrada no índice ${elementos3DIndex}`, 'success');
+                } else {
+                    log('❌ Coluna Elementos3D NÃO encontrada!', 'error');
+                    log(`🔍 Colunas disponíveis: ${columns.map(c => `"${c.trim()}"`).join(', ')}`, 'warning');
+                }
+                
+                // Analisar dados
+                const tbody = document.getElementById('tbody-csv');
+                tbody.innerHTML = '';
+                document.getElementById('tabela-csv').style.display = 'table';
+                
+                let itensComElementos = 0;
+                
+                for (let i = 4; i < lines.length; i++) { // Começar da linha 5 (dados)
+                    const line = lines[i].trim();
+                    if (!line || line.startsWith(';') || line.includes('____')) continue;
+                    
+                    const cols = line.split(';');
+                    if (cols.length >= 8) {
+                        const item = cols[0]?.trim();
+                        const descricao = cols[1]?.trim();
+                        const elementos3D = cols[8]?.trim(); // Posição 8
+                        
+                        const hasElementos = elementos3D && elementos3D !== '';
+                        if (hasElementos) itensComElementos++;
+                        
+                        const row = tbody.insertRow();
+                        row.insertCell(0).textContent = item;
+                        row.insertCell(1).textContent = descricao;
+                        row.insertCell(2).textContent = elementos3D || '(vazio)';
+                        row.insertCell(3).textContent = hasElementos ? '✅ OK' : '❌ Vazio';
+                        
+                        if (hasElementos) {
+                            row.style.backgroundColor = '#002200';
+                        } else {
+                            row.style.backgroundColor = '#220000';
+                        }
+                    }
+                }
+                
+                log(`📊 Itens com Elementos3D preenchidos: ${itensComElementos}`, 
+                    itensComElementos > 0 ? 'success' : 'error');
+                
+            } catch (error) {
+                log(`❌ Erro: ${error}`, 'error');
+            }
+        }
+
+        async function testarGLB() {
+            log('🎲 === TESTE DO MODELO GLB ===', 'result');
+            
+            try {
+                const response = await fetch('./5d.glb');
+                if (response.ok) {
+                    const size = response.headers.get('content-length');
+                    log(`✅ Modelo GLB acessível (${size ? Math.round(size/1024) + 'KB' : 'tamanho desconhecido'})`, 'success');
+                } else {
+                    log(`❌ Erro ${response.status}: ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro ao acessar GLB: ${error}`, 'error');
+            }
+        }
+
+        async function testarLinkagem() {
+            log('🔗 === TESTE DE LINKAGEM ===', 'result');
+            
+            // Verificar se o dashboard principal está aberto
+            if (window.opener) {
+                try {
+                    const itens = window.opener.debugData?.itens || [];
+                    const glbElements = window.opener.glbElements || [];
+                    
+                    log(`📊 Itens do dashboard: ${itens.length}`, 'result');
+                    log(`🎲 Elementos GLB: ${glbElements.length}`, 'result');
+                    
+                    if (itens.length > 0) {
+                        const itensComElementos = itens.filter(item => item.elementos3D && item.elementos3D.trim() !== '');
+                        log(`🔗 Itens com elementos3D: ${itensComElementos.length}`, 
+                            itensComElementos.length > 0 ? 'success' : 'error');
+                        
+                        if (itensComElementos.length > 0) {
+                            log('📋 Exemplos de linkagem:', 'result');
+                            itensComElementos.slice(0, 5).forEach(item => {
+                                log(`   ${item.id}: "${item.elementos3D}"`, 'result');
+                            });
+                        }
+                    }
+                    
+                    if (glbElements.length > 0) {
+                        log('🎲 Primeiros elementos GLB:', 'result');
+                        glbElements.slice(0, 10).forEach((el, i) => {
+                            log(`   ${i+1}. "${el}"`, 'result');
+                        });
+                    }
+                    
+                } catch (error) {
+                    log(`❌ Erro ao acessar dados do dashboard: ${error}`, 'error');
+                }
+            } else {
+                log('⚠️ Dashboard principal não detectado. Abra este teste a partir do dashboard principal.', 'warning');
+            }
+        }
+
+        async function simularClick() {
+            log('🖱️ === SIMULAÇÃO DE CLICK ===', 'result');
+            
+            if (window.opener) {
+                try {
+                    // Buscar um item com elementos3D
+                    const itens = window.opener.debugData?.itens || [];
+                    const itemComElementos = itens.find(item => item.elementos3D && item.elementos3D.trim() !== '');
+                    
+                    if (itemComElementos) {
+                        log(`🎯 Simulando click no item: ${itemComElementos.id} - ${itemComElementos.descricao}`, 'result');
+                        log(`🔗 Elementos3D: "${itemComElementos.elementos3D}"`, 'result');
+                        
+                        // Tentar simular o click
+                        if (window.opener.handleItemSelect) {
+                            window.opener.handleItemSelect(itemComElementos);
+                            log('✅ Click simulado com sucesso!', 'success');
+                            
+                            // Verificar resultado após 1 segundo
+                            setTimeout(() => {
+                                const highlighted = window.opener.highlightedElements || [];
+                                log(`🎨 Elementos destacados após click: ${highlighted.length}`, 
+                                    highlighted.length > 0 ? 'success' : 'error');
+                                
+                                if (highlighted.length > 0) {
+                                    log(`🟠 Elementos em destaque: ${highlighted.join(', ')}`, 'success');
+                                }
+                            }, 1000);
+                            
+                        } else {
+                            log('❌ Função handleItemSelect não encontrada', 'error');
+                        }
+                    } else {
+                        log('❌ Nenhum item com elementos3D encontrado para testar', 'error');
+                    }
+                    
+                } catch (error) {
+                    log(`❌ Erro na simulação: ${error}`, 'error');
+                }
+            } else {
+                log('⚠️ Dashboard principal não detectado', 'warning');
+            }
+        }
+
+        // Auto-executar ao carregar
+        window.onload = function() {
+            log('🚀 Debug de linkagem inicializado', 'success');
+            log('💡 Execute os testes na ordem: CSV → GLB → Linkagem → Simular Click', 'result');
+        };
+    </script>
+</body>
+</html>
